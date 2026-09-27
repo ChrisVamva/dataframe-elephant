@@ -2,3 +2,8 @@
 .pytest_cache/
 *.duckdb
 *.jsonl
+.env
+__pycache__/
+*.pyc
+scratch/
+

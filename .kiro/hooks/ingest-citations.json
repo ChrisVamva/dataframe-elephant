@@ -1,0 +1,23 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Auto-ingest citations on save",
+      "trigger": "PostFileSave",
+      "matcher": "research/raw/.*\\.md",
+      "action": {
+        "type": "command",
+        "command": ".venv/Scripts/python src/ingest_citations.py --raw-dir research/raw --database data/citations.duckdb --warnings data/citation_ingestion_warnings.jsonl --schema schemas/citations.sql"
+      }
+    },
+    {
+      "name": "Auto-ingest citations on create",
+      "trigger": "PostFileCreate",
+      "matcher": "research/raw/.*\\.md",
+      "action": {
+        "type": "command",
+        "command": ".venv/Scripts/python src/ingest_citations.py --raw-dir research/raw --database data/citations.duckdb --warnings data/citation_ingestion_warnings.jsonl --schema schemas/citations.sql"
+      }
+    }
+  ]
+}

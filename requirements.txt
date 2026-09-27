@@ -1,2 +1,4 @@
 duckdb>=1.4,<2.0
 pytest>=8,<10
+hypothesis>=6,<7
+cryptography>=43.0.0

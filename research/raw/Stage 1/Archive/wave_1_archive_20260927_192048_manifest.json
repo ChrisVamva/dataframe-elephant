@@ -1,0 +1,80 @@
+{
+  "format": "ECA-v1",
+  "created_utc": "2026-09-27T19:20:49Z",
+  "archive_file": "wave_1_archive_20260927_192048.tar.gz.enc",
+  "source_directory": "C:\\Users\\user\\dataframe-elephant\\research\\raw\\Stage 1\\Wave 1",
+  "file_count": 13,
+  "total_uncompressed_bytes": 482433,
+  "total_compressed_bytes": 150269,
+  "compression_ratio": 3.21,
+  "verification_status": "VERIFIED_OK",
+  "cipher": "AES-256-GCM",
+  "kdf": "PBKDF2-HMAC-SHA256 (600000 iterations)",
+  "files": [
+    {
+      "path": "ANT GP H.md",
+      "size_bytes": 7983,
+      "sha256": "68620f162cbf51800306f87838a9803adf6cf71cde91ab9d6d46432b0a2b3bc8"
+    },
+    {
+      "path": "C.md",
+      "size_bytes": 64050,
+      "sha256": "e4290fcc243cb4a9670382083cf80e309b309da30664e1e5eaae48dc4bd46ad7"
+    },
+    {
+      "path": "CNE DPS 4.1 F.md",
+      "size_bytes": 116497,
+      "sha256": "d7d43b3278852ff51bad6b1e0bc96e89bacc3978dc071886f1838dc05db7eb50"
+    },
+    {
+      "path": "CP L6.md",
+      "size_bytes": 23809,
+      "sha256": "2c529a3be4a73a21984fa04708f0ce684efb1962ebf1ff520c018f708492e853"
+    },
+    {
+      "path": "DC L5.6.md",
+      "size_bytes": 34923,
+      "sha256": "e194854f9109db8afac56bcc14fb13a4b7f7ea5e6ba50684f6086787d0f77b66"
+    },
+    {
+      "path": "DPS.md",
+      "size_bytes": 51669,
+      "sha256": "214946ecdcde080020ddd43965924b92db844e299e10f0d935e2097df2238d98"
+    },
+    {
+      "path": "FAI.md",
+      "size_bytes": 72978,
+      "sha256": "85b30de52d92953dde3dff2f01e6bd5f390b94c4fd27740fb67afa3896569657"
+    },
+    {
+      "path": "G0.md",
+      "size_bytes": 25674,
+      "sha256": "31c341e5bdefb7481fd4642013de2baf14d6b28fc5cfe56ffebc53448995205a"
+    },
+    {
+      "path": "G1.md",
+      "size_bytes": 5708,
+      "sha256": "fe51d8e456ce418cd5cbd4b987373f0c3ace2067ab4813370ce242081a00ee6f"
+    },
+    {
+      "path": "G2.md",
+      "size_bytes": 5931,
+      "sha256": "47e6939c61c648b6187e9867a1c2aee8572d45e771b0c77c64d1fe24ba0fb4fd"
+    },
+    {
+      "path": "G3.md",
+      "size_bytes": 6390,
+      "sha256": "46ea5f6c1616da09333ab88391f3e6106fe88a2ca7dcc80cf62481f14ed45de2"
+    },
+    {
+      "path": "OP MS 1.3F.md",
+      "size_bytes": 44487,
+      "sha256": "0633bb4a6773aa8e7ffef3a96a0a89e05f699290cdcdff581584eef4e7563266"
+    },
+    {
+      "path": "Q.md",
+      "size_bytes": 22334,
+      "sha256": "8a8d5e6e99142566ed43b4675a13799b14f1212923298d6c64d0551b2378da4a"
+    }
+  ]
+}

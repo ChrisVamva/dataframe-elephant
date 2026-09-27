@@ -49,8 +49,12 @@ CREATE TABLE IF NOT EXISTS source (
     access_date DATE,
     status VARCHAR,
     bias_notes VARCHAR,
-    metadata_notes VARCHAR
+    metadata_notes VARCHAR,
+    domain_category VARCHAR NOT NULL DEFAULT 'uncategorised'
 );
+
+ALTER TABLE source ADD COLUMN IF NOT EXISTS
+    domain_category VARCHAR DEFAULT 'uncategorised';
 
 CREATE TABLE IF NOT EXISTS citation_occurrence (
     occurrence_id VARCHAR PRIMARY KEY,
@@ -63,8 +67,12 @@ CREATE TABLE IF NOT EXISTS citation_occurrence (
     extraction_method VARCHAR NOT NULL,
     resolution_status VARCHAR NOT NULL CHECK (
         resolution_status IN ('resolved', 'unresolved', 'ambiguous')
-    )
+    ),
+    evidence_tier VARCHAR NOT NULL DEFAULT 'unclassified'
 );
+
+ALTER TABLE citation_occurrence ADD COLUMN IF NOT EXISTS
+    evidence_tier VARCHAR DEFAULT 'unclassified';
 
 CREATE TABLE IF NOT EXISTS source_alias (
     alias_id VARCHAR PRIMARY KEY,

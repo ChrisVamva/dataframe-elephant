@@ -55,7 +55,10 @@ def normalize_url(raw_url: str) -> str | None:
     elif not re.match(r"^https?://", value, re.IGNORECASE):
         value = f"https://{value}"
 
-    parts = urlsplit(value)
+    try:
+        parts = urlsplit(value)
+    except ValueError:
+        return None
     host = (parts.hostname or "").lower()
     if not host or "." not in host:
         return None
@@ -299,6 +302,32 @@ def _metadata_value(text: str, keys: tuple[str, ...]) -> str:
     return match.group(1).strip(" `*_\"'\n\r").strip(".!,;:?")
 
 
+EVIDENCE_TIERS = frozenset({
+    "tier_1_primary",
+    "tier_2_secondary",
+    "tier_3_tertiary",
+    "unclassified",
+})
+
+
+def _classify_evidence_tier(recorded_classification: str | None) -> str:
+    """Return an evidence tier label for a citation occurrence.
+
+    Performs a case-insensitive substring match against ``recorded_classification``.
+    The return value is always a member of ``EVIDENCE_TIERS``.
+    """
+    if not recorded_classification:
+        return "unclassified"
+    value = recorded_classification.casefold()
+    if "primary" in value:
+        return "tier_1_primary"
+    if "secondary" in value:
+        return "tier_2_secondary"
+    if "internal" in value:
+        return "tier_3_tertiary"
+    return "unclassified"
+
+
 def _classify_source_type(title: str, url: str | None) -> str:
     value = (title + " " + (url or "")).casefold()
     host = urlsplit(url).hostname if url else ""
@@ -315,6 +344,89 @@ def _classify_source_type(title: str, url: str | None) -> str:
     if any(token in value for token in ("blog", "newsletter", "medium.com")):
         return "blog"
     return "web_source"
+
+
+DOMAIN_CATEGORIES = frozenset({
+    "compliance_regulation",
+    "ai_ml_technology",
+    "workflow_process",
+    "market_research",
+    "technical_standard",
+    "academic_research",
+    "organizational",
+    "uncategorised",
+})
+
+# Keyword rules applied to each field in turn; first matching rule wins.
+# Each entry is (token_or_tokens, category). A string is a single token;
+# a tuple means *any* of the tokens triggers the category.
+_DOMAIN_KEYWORD_RULES: tuple[tuple[str | tuple[str, ...], str], ...] = (
+    # Checked against the hostname only
+    # (host rules are handled separately in _classify_domain; listed here for documentation)
+    # Checked against the full lowercased field value
+    (("gdpr", "accessibility", "wcag", "legal", "regulation", "compliance"), "compliance_regulation"),
+    (("llm", "machine learning", "artificial intelligence", "nlp"), "ai_ml_technology"),
+    (("procurement", "onboarding", "workflow", "operations", "process"), "workflow_process"),
+    (("market research", "industry report", "analyst", "gartner", "forrester"), "market_research"),
+    (("job posting", "job board", "career"), "organizational"),
+)
+
+
+def _classify_domain(
+    canonical_url: str | None,
+    title: str,
+    publisher: str | None,
+) -> str:
+    """Return a domain_category from DOMAIN_CATEGORIES for the given source fields.
+
+    Field precedence: canonical_url → publisher → title.
+    First-matching rule wins within each field.
+    """
+
+    def _category_for_value(value: str, host: str) -> str | None:
+        # Host-level rules (applied first within this field)
+        if host in ("w3.org", "nist.gov", "iso.org") or any(
+            host.endswith(f".{apex}") for apex in ("w3.org", "nist.gov", "iso.org")
+        ):
+            return "technical_standard"
+        if host in ("doi.org", "arxiv.org", "acm.org", "springer.com") or any(
+            host.endswith(f".{apex}") for apex in ("doi.org", "arxiv.org", "acm.org", "springer.com")
+        ):
+            return "academic_research"
+        if host and (host.endswith(".gov") or host.endswith(".gov.uk")):
+            return "compliance_regulation"
+        if host == "linkedin.com" or host.endswith(".linkedin.com"):
+            return "organizational"
+        # Keyword rules applied to the lowercased field value.
+        # URL paths use hyphens/underscores as word separators; normalise them to spaces
+        # so that "machine-learning" matches the "machine learning" keyword.
+        lower = re.sub(r"[-_]", " ", value)
+        for tokens, category in _DOMAIN_KEYWORD_RULES:
+            token_list = (tokens,) if isinstance(tokens, str) else tokens
+            for token in token_list:
+                if token == "ai":
+                    # Only match " ai " as a standalone word to avoid spurious hits
+                    if " ai " in f" {lower} " or lower.startswith("ai "):
+                        return category
+                elif token == "ml":
+                    if " ml " in f" {lower} " or lower.startswith("ml "):
+                        return category
+                elif token in lower:
+                    return category
+        return None
+
+    # Evaluate each field in precedence order
+    for raw_field in (canonical_url, publisher, title):
+        if not raw_field:
+            continue
+        lower_field = raw_field.casefold()
+        parsed = urlsplit(raw_field) if raw_field.startswith(("http://", "https://")) else None
+        host = (parsed.hostname or "").casefold() if parsed else ""
+        result = _category_for_value(lower_field, host)
+        if result is not None:
+            return result
+
+    return "uncategorised"
 
 
 def _make_warning(
@@ -409,6 +521,7 @@ def _source_row_data(
                 if not _is_direct_url(canonical_url)
                 else None
             ),
+            "domain_category": _classify_domain(canonical_url, title, publisher),
         }
         if not _is_direct_url(canonical_url):
             warnings.append(
@@ -474,6 +587,7 @@ def _source_row_data(
         "recorded_classification": classification or None,
         "extraction_method": "markdown_source_table",
         "resolution_status": resolution_status,
+        "evidence_tier": _classify_evidence_tier(classification),
     }
     alias_value = label or title
     alias = {
@@ -625,6 +739,165 @@ def _merge_source_metadata(
         existing[key] = existing[key] or source[key]
 
 
+def _load_file_cache(database_path: Path) -> dict[str, str]:
+    """Return {path: sha256} from the most recent ingestion_run in database_path.
+
+    Returns an empty dict if the database does not exist, cannot be opened,
+    or contains no ingestion_run rows.
+    """
+    if not database_path.exists():
+        return {}
+    connection: duckdb.DuckDBPyConnection | None = None
+    try:
+        connection = duckdb.connect(str(database_path), read_only=True)
+        results = connection.execute(
+            """
+            SELECT ii.path, ii.sha256
+            FROM ingestion_input ii
+            JOIN ingestion_run ir ON ir.run_id = ii.run_id
+            WHERE ir.built_at = (SELECT MAX(built_at) FROM ingestion_run)
+            """
+        ).fetchall()
+        return {row[0]: row[1] for row in results}
+    except Exception:
+        return {}
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def _copy_unchanged_rows(
+    old_db_path: Path,
+    unchanged_paths: set[str],
+    run_id: str,
+    source_records: dict[str, dict[str, Any]],
+    warnings: list[dict[str, str]],
+) -> tuple[
+    list[dict[str, Any]],  # document_rows
+    list[dict[str, Any]],  # occurrence_rows
+    list[dict[str, Any]],  # alias_rows
+    list[dict[str, Any]],  # claim_rows
+    list[dict[str, Any]],  # claim_source_rows
+]:
+    """Carry forward rows for unchanged files from the previous database.
+
+    ATTACHes ``old_db_path`` read-only, SELECTs all rows belonging to
+    ``unchanged_paths`` from each content table, and returns them as Python
+    lists so that the caller can merge and insert them.  Source rows are fed
+    through ``_merge_source_metadata`` into ``source_records`` directly rather
+    than returned in a list.  ``ingestion_warning`` rows are appended directly
+    to ``warnings``.
+
+    If ``unchanged_paths`` is empty, returns five empty lists immediately.
+    If any exception occurs, catches it and returns five empty lists so that
+    ``build_database`` falls back to a full rebuild for those files.
+    """
+    if not unchanged_paths:
+        return [], [], [], [], []
+
+    connection: duckdb.DuckDBPyConnection | None = None
+    try:
+        connection = duckdb.connect(str(old_db_path), read_only=True)
+        placeholders = ", ".join("?" for _ in unchanged_paths)
+        path_list = list(unchanged_paths)
+
+        def _fetch(sql: str, params: list[Any]) -> list[dict[str, Any]]:
+            cursor = connection.execute(sql, params)
+            col_names = [desc[0] for desc in cursor.description]
+            return [dict(zip(col_names, row)) for row in cursor.fetchall()]
+
+        # 1. research_document
+        document_rows = _fetch(
+            f"SELECT * FROM research_document WHERE path IN ({placeholders})",
+            path_list,
+        )
+
+        # 2. source — feed through merge, do not collect into a return list
+        source_rows = _fetch(
+            f"""
+            SELECT * FROM source
+            WHERE source_id IN (
+                SELECT DISTINCT source_id
+                FROM citation_occurrence
+                WHERE document_id IN (
+                    SELECT document_id FROM research_document
+                    WHERE path IN ({placeholders})
+                )
+                AND source_id IS NOT NULL
+            )
+            """,
+            path_list,
+        )
+        for source_row in source_rows:
+            _merge_source_metadata(source_records, source_row, "cache", run_id, warnings)
+
+        # 3. citation_occurrence (includes evidence_tier)
+        occurrence_rows = _fetch(
+            f"""
+            SELECT * FROM citation_occurrence
+            WHERE document_id IN (
+                SELECT document_id FROM research_document
+                WHERE path IN ({placeholders})
+            )
+            """,
+            path_list,
+        )
+
+        # 4. source_alias
+        alias_rows = _fetch(
+            f"""
+            SELECT * FROM source_alias
+            WHERE document_id IN (
+                SELECT document_id FROM research_document
+                WHERE path IN ({placeholders})
+            )
+            """,
+            path_list,
+        )
+
+        # 5. claim
+        claim_rows = _fetch(
+            f"""
+            SELECT * FROM claim
+            WHERE document_id IN (
+                SELECT document_id FROM research_document
+                WHERE path IN ({placeholders})
+            )
+            """,
+            path_list,
+        )
+
+        # 6. claim_source
+        claim_source_rows = _fetch(
+            f"""
+            SELECT * FROM claim_source
+            WHERE claim_id IN (
+                SELECT claim_id FROM claim
+                WHERE document_id IN (
+                    SELECT document_id FROM research_document
+                    WHERE path IN ({placeholders})
+                )
+            )
+            """,
+            path_list,
+        )
+
+        # 7. ingestion_warning — append directly to warnings (Requirement 9.9)
+        warning_rows = _fetch(
+            f"SELECT * FROM ingestion_warning WHERE input_path IN ({placeholders})",
+            path_list,
+        )
+        warnings.extend(warning_rows)
+
+        return document_rows, occurrence_rows, alias_rows, claim_rows, claim_source_rows
+
+    except Exception:
+        return [], [], [], [], []
+    finally:
+        if connection is not None:
+            connection.close()
+
+
 def _insert_rows(connection: duckdb.DuckDBPyConnection, table: str, rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
@@ -682,8 +955,30 @@ def build_database(
     claim_rows: list[dict[str, Any]] = []
     claim_source_rows: list[dict[str, Any]] = []
 
+    # --- Incremental cache ---
+    # Load the hash cache from the previous database (returns {} if none exists or fails)
+    file_cache = _load_file_cache(database_path)
+
+    # Classify each snapshot as unchanged or changed
+    unchanged_paths: set[str] = {
+        snap["path"]
+        for snap in snapshots
+        if file_cache.get(snap["path"]) == snap["sha256"]
+    }
+    changed_snapshots = [snap for snap in snapshots if snap["path"] not in unchanged_paths]
+
+    # Carry forward rows for unchanged files (mutates source_records and warnings in place)
+    cached_doc_rows, cached_occ_rows, cached_alias_rows, cached_claim_rows, cached_cs_rows = (
+        _copy_unchanged_rows(database_path, unchanged_paths, run_id, source_records, warnings)
+    )
+    document_rows.extend(cached_doc_rows)
+    occurrence_rows.extend(cached_occ_rows)
+    alias_rows.extend(cached_alias_rows)
+    claim_rows.extend(cached_claim_rows)
+    claim_source_rows.extend(cached_cs_rows)
+
     parsed_documents: list[dict[str, Any]] = []
-    for snapshot in snapshots:
+    for snapshot in changed_snapshots:
         path = snapshot["absolute_path"]
         relative_path = snapshot["path"]
         markdown = path.read_text(encoding="utf-8", errors="replace")
@@ -835,6 +1130,11 @@ def build_database(
         _insert_rows(connection, "source_alias", alias_rows)
         _insert_rows(connection, "claim", deduplicated_claim_rows)
         _insert_rows(connection, "claim_source", merged_claim_source_rows)
+        # Deduplicate warnings by warning_id before inserting (carried-forward + new may overlap)
+        deduplicated_warnings: dict[str, dict[str, str]] = {}
+        for w in warnings:
+            deduplicated_warnings.setdefault(w["warning_id"], w)
+        warnings = list(deduplicated_warnings.values())
         _insert_rows(connection, "ingestion_warning", warnings)
         connection.execute("COMMIT")
     except Exception:
