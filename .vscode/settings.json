@@ -1,0 +1,6 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "//sql dialect": "The .sql files in schemas/ and analysis/ are DuckDB SQL, not T-SQL. Setting this to true makes the mssql extension auto-disable its T-SQL language service (and its false T-SQL parse errors) for files it detects as non-T-SQL. It overrides the user-level 'false' value.",
+    "mssql.autoDisableNonTSqlLanguageService": true
+}
