@@ -1,0 +1,105 @@
+**Wave 1 Track A — Entity Boundary Dossiers (first batch)**
+
+---
+
+### RQ-001: DuckDB
+
+**Core question**  
+What is DuckDB precisely, and what is it explicitly **not**?
+
+**In scope**  
+Primary architecture, deployment model, and storage/query capabilities as stated by the DuckDB project.
+
+**Out of scope**  
+Marketing comparisons, third-party “DuckDB for X” wrappers, future roadmaps beyond current documented behaviour, Quack/DuckLake as if they were core native behaviour of the base engine.
+
+**Intended use**  
+Write-back sentence for `Entities.md` “Boundary (what it is not)”.
+
+**Minimum evidence class**  
+Official documentation / project FAQ / architecture pages (primary).
+
+**Target sources**  
+- https://duckdb.org/why_duckdb.html  
+- https://duckdb.org/faq.html  
+- https://duckdb.org/docs/current/connect/concurrency.html  
+- Architecture overviews on duckdb.org  
+
+**Resolution (documented fact, high confidence)**  
+DuckDB is an **in-process, embeddable analytical (OLAP) SQL database management system**. It runs entirely inside a host process (no separate server process required by default), uses vectorized execution, supports single-file or in-memory storage, ACID transactions via MVCC, and can spill to disk. It is deliberately **not** a distributed query engine and does **not** natively perform multi-node coordination or act as a classic client-server warehouse.
+
+**Boundary sentence (ready for Entities.md)**  
+> DuckDB is an in-process embeddable OLAP SQL engine; it does not natively provide distributed coordination across nodes or require a separate server process (Quack and DuckLake are separate extensions/formats that add remote or lakehouse capabilities).
+
+**Falsifier test**  
+Searched for evidence that the core DuckDB engine natively performs distributed coordination or proprietary multi-node storage.  
+Result: Official docs state it is a single-node system that uses *vertical* scalability. Multi-process writes and client-server mode are provided by the separate **Quack** protocol (beta → maturing) or by **DuckLake** (external catalog). No evidence that the base engine itself implements distributed coordination. Falsifier does **not** fire.
+
+**Evidence rows**
+
+| Claim | Type | Confidence | Supporting evidence | Contradicting | Falsifier status |
+|-------|------|------------|---------------------|---------------|------------------|
+| DuckDB runs embedded in-process, no separate server required by default | Documented fact | High | why_duckdb.html, architecture pages | None | N/A |
+| Single-node; vertical scalability only | Documented fact | High | FAQ “How does scalability work in DuckDB?” | None | Passes |
+| Quack turns DuckDB into client-server; not core native behaviour | Documented fact | High | Quack docs + FAQ | None | Passes |
+
+**Verdict**: **resolved**  
+**Access date**: 2026-09-28  
+
+**Gate self-check**: A (scope tight) / B (falsifier tested) / C (primary URLs) / D (high)
+
+---
+
+### RQ-016: MCP (Model Context Protocol)
+
+**Core question**  
+What is MCP precisely, and what is it explicitly **not**?
+
+**In scope**  
+Official specification scope, participants, layers, and stated non-goals.
+
+**Out of scope**  
+Specific SDK implementations, particular host applications (Claude Desktop, etc.), transport details beyond the protocol definition, security evaluation of individual servers.
+
+**Intended use**  
+Write-back boundary for `Entities.md`.
+
+**Minimum evidence class**  
+Official MCP specification and architecture pages (modelcontextprotocol.io).
+
+**Target sources**  
+- https://modelcontextprotocol.io/specification/ (latest / 2026-07-28)  
+- https://modelcontextprotocol.io/docs/.../architecture  
+- GitHub modelcontextprotocol/modelcontextprotocol  
+
+**Resolution (documented fact, high confidence)**  
+MCP (Model Context Protocol) is an **open JSON-RPC protocol** that standardizes how LLM applications (hosts) connect to external data sources and tools via clients and servers. It defines message formats, lifecycle, capability negotiation, and primitives (resources, tools, prompts).  
+
+**It is not** an LLM runtime, an agent orchestration framework, a transport protocol beyond its defined stdio/Streamable-HTTP options, or a system that dictates how the host uses the LLM or manages conversation state.
+
+**Boundary sentence (ready for Entities.md)**  
+> MCP is a standardized JSON-RPC protocol for exchanging context and tool capabilities between LLM hosts and external servers; it does not implement LLM inference, agent planning/orchestration, or full application-level state management.
+
+**Falsifier test**  
+Searched for evidence that the MCP specification itself natively implements out-of-scope transport or model capabilities (e.g., built-in model serving, general distributed orchestration, proprietary transport beyond the defined ones).  
+Result: Spec explicitly limits itself to the protocol for context exchange. Architecture docs state: “MCP focuses solely on the protocol for context exchange—it does not dictate how AI applications use LLMs or manage the provided context.” Transports are limited to stdio and Streamable HTTP (plus custom pluggable). Falsifier does **not** fire.
+
+**Evidence rows**
+
+| Claim | Type | Confidence | Supporting evidence | Contradicting | Falsifier status |
+|-------|------|------------|---------------------|---------------|------------------|
+| MCP is a protocol for context/tool integration via JSON-RPC | Documented fact | High | Specification overview | None | N/A |
+| Does not dictate LLM usage or conversation management | Documented fact | High | Architecture “Scope” section | None | Passes |
+| Defined transports: stdio + Streamable HTTP | Documented fact | High | Transports page | None | Passes |
+
+**Verdict**: **resolved**  
+**Access date**: 2026-09-28  
+
+**Gate self-check**: A / B / C / D — all green
+
+---
+
+**Track A progress**  
+RQ-001 (DuckDB) and RQ-016 (MCP) closed.  
+
+Next in priority order: RQ-007 MotherDuck, then RQ-008 pandas, RQ-009 Polars, RQ-010 dbt, RQ-018 PROV.

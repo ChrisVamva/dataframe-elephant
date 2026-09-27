@@ -22,3 +22,13 @@ The parser only links sources by an exact normalized URL or an explicit source l
 The current corpus has no claim table with the required explicit claim type and confidence fields, so the first snapshot contains zero claims and zero claim-source mappings. Inline prose references are not converted into claim links. The next curation step is to review unresolved source aliases and add explicit, typed claim/evidence-span rows for the research briefs; do not infer those mappings from surrounding prose.
 
 `source_recurrence` reports appearances by distinct documents and total occurrences. `source_reputation` is a profile of separate recorded dimensions: evidence class (authority proxy), directness, dates, status, documented independence groups, limitations, and recurrence. When the source text does not state a status or directness, those values remain NULL rather than being forced to `unknown`; that preserves the distinction between "not recorded" and "explicitly recorded as unknown." Use `analysis/citation_evaluator.sql` for the initial review queries, including the warning stream and unresolved alias review.
+
+## Stage 2 database
+
+The typed Stage 2 mirror is built separately per `Protocols/FromStagetoDatabases.md` (Option A: dedicated database, `citations.duckdb` untouched):
+
+```powershell
+.\.venv\Scripts\python.exe scripts/import_stage2.py
+```
+
+This writes `data/stage2.duckdb` and `data/stage2_ingestion_warnings.jsonl` from the seven `research/raw/Stage 2/` files via `schemas/stage2.sql`. All frontmatter gates must be `pass` or the import is rejected. Uncertainty markers are preserved as `*_stated` BOOLs; gap views (`unstated_boundaries`, `unstated_conditions`, `missing_falsifiers`, `open_questions`) feed the FollowUpResearch scanners.

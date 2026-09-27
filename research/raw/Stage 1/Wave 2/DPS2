@@ -1,0 +1,446 @@
+# Follow-Up Research: Wave 2 Gap Closure — Wave 1 Report
+
+**Date:** 2026-09-28
+**Status:** Track A complete (7/7 dossiers); Track B complete (6/6 dossiers); Track C blocked on input access (2/2 dossiers still open).
+
+**Protocol compliance:** Gate A (scope) satisfied — all dossiers confined to their declared In-scope targets. Gate B (falsifier) satisfied — each dossier tested its stated falsifier against primary documentation. Gate C (provenance) satisfied — every resolution carries URL, publisher, and date. Gate D (scores) — RQ-001 and RQ-016 (20.0 each) resolved first, then remaining Track A, then Track B. Track C deferred pending trigger access.
+
+---
+
+## Wave 1 — Track A: Entity Boundaries (7 dossiers)
+
+---
+
+### RQ-001: DuckDB — Boundary (what it is not)
+
+**Core question:** What is DuckDB precisely, and what is it explicitly *not*?
+
+**In scope:** DuckDB's architectural boundaries as documented in official architecture pages and system descriptions.
+
+**Out of scope:** DuckDB Labs' commercial roadmap, MotherDuck's dual-execution layer, benchmark performance comparisons.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → DuckDB.
+
+**Minimum evidence class:** Primary documentation (official architecture page).
+
+**Target sources:** DuckDB System Architecture page; DuckDB introduction page; DuckDB Labs engineer statements.
+
+**Resolution:**
+
+DuckDB is an in-process analytical database (OLAP) that runs entirely within the host application process, uses a single-file storage format (or in-memory), and employs a vectorized interpreted execution engine with a push-based execution model. It is explicitly **not** a distributed database: it uses a shared-everything architecture in which compute and storage are not separated, and it maintains a single PAX-oriented file per database rather than a distributed storage fabric. It does **not** implement proprietary storage: its storage format is the open DuckDB Storage Format, a compressed, columnar, block-based format designed for efficient storage and query execution within a single self-contained file. It does **not** natively perform distributed coordination across nodes; multi-node coordination is MotherDuck's concern, not DuckDB's.
+
+**Falsifier tested:** "Finds DuckDB natively doing distributed coordination or proprietary storage." Not found. DuckDB documentation explicitly describes shared-everything architecture with no compute/storage separation, and the storage format is documented as open and self-contained.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** DuckDB is **not** a distributed database and **not** a client-server DBMS. It uses a shared-everything architecture (no compute/storage separation), stores data in a single-file, open, columnar PAX-oriented format, and runs entirely in-process with no separate server. Multi-node coordination and cloud-scale distribution are out of DuckDB's scope; those capabilities belong to MotherDuck's dual-execution layer, not to DuckDB itself.
+
+**Gate self-check:** A (scope) ✓ / B (falsifier) ✓ / C (provenance) ✓ / D (scores) ✓
+
+---
+
+### RQ-016: MCP — Boundary (what it is not)
+
+**Core question:** What is MCP precisely, and what is it explicitly *not*?
+
+**In scope:** Model Context Protocol specification scope, transport layer, data layer, and explicit out-of-scope declarations.
+
+**Out of scope:** SDK implementation details, specific server implementations, host application behavior.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → MCP.
+
+**Minimum evidence class:** Official specification (modelcontextprotocol.io).
+
+**Target sources:** MCP Architecture overview; MCP Specification page.
+
+**Resolution:**
+
+MCP is an open protocol that enables seamless integration between LLM applications and external data sources and tools, using JSON-RPC 2.0 messages over a two-layer architecture (data layer and transport layer). The data layer defines the JSON-RPC-based protocol for client-server communication, including lifecycle management and core primitives (tools, resources, prompts, notifications). The transport layer defines communication mechanisms and channels, including transport-specific connection establishment, message framing, and authorization. MCP **focuses solely on the protocol for context exchange**—it **does not dictate how AI applications use LLMs or manage the provided context**. It does **not** natively implement model training, inference, or model capability; those are host-application responsibilities. It does **not** prescribe application-level orchestration logic, agent planning, or decision-making—it provides the communication substrate, not the intelligence layer.
+
+**Falsifier tested:** "Finds MCP natively implementing out-of-scope transport/model capability." Not found. The specification explicitly states MCP "focuses solely on the protocol for context exchange" and does not dictate LLM usage or context management.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** MCP is **not** an AI application framework, **not** a model runtime, and **not** an agent orchestration system. It is a protocol for context exchange between LLM applications and external tools/data sources. MCP **does not** dictate how AI applications use LLMs, manage context, plan actions, or make decisions. It defines the communication substrate (JSON-RPC 2.0 over stdio or Streamable HTTP) and core primitives (tools, resources, prompts), but application-level intelligence, model capability, and orchestration logic are out of its scope.
+
+**Gate self-check:** A ✓ / B ✓ / C ✓ / D ✓
+
+---
+
+### RQ-007: MotherDuck — Boundary (what it is not)
+
+**Core question:** What is MotherDuck precisely, and what is it explicitly *not*?
+
+**In scope:** MotherDuck architecture and capabilities as documented in official docs.
+
+**Out of scope:** Performance benchmarks, pricing, regional availability details.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → MotherDuck.
+
+**Minimum evidence class:** Primary product documentation (motherduck.com/docs).
+
+**Target sources:** MotherDuck Architecture and capabilities page; MotherDuck "Bringing DuckDB to the Cloud" engineering post.
+
+**Resolution:**
+
+MotherDuck is a serverless cloud data warehouse built on DuckDB that combines cloud scale with DuckDB's efficiency, using a hypertenancy model where every user or agent gets a dedicated compute instance with no clusters or warehouses to manage. Its key components are the MotherDuck cloud service, the MotherDuck DuckDB SDK, Dual Execution, and the MotherDuck web UI. Dual Execution routes queries to the optimal location—local DuckDB, MotherDuck cloud, or both. MotherDuck **does not fork DuckDB**; its core philosophy is to not fork the engine. It **does not** natively implement a proprietary query engine: it runs DuckDB under the hood and speaks DuckDB's SQL dialect. It **does not** require manual cluster or warehouse provisioning—the execution model is serverless. It **does not** natively perform engine-level distributed coordination beyond the client-duckling two-node model; its distributed system involves only two nodes (client and duckling).
+
+**Falsifier tested:** "Finds MotherDuck natively implementing assumed-out-of-scope engine work." Not found. MotherDuck documentation explicitly states it is built on DuckDB and does not fork the engine; its architecture is a cloud service layer around DuckDB, not a replacement engine.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** MotherDuck is **not** a standalone database engine and **not** a forked DuckDB. It is a serverless cloud service built on DuckDB that uses Dual Execution to route queries between local DuckDB and the cloud. MotherDuck **does not** implement its own query engine or proprietary storage format—it runs DuckDB and speaks DuckDB's SQL dialect. Its distributed coordination is limited to the client-duckling two-node model; it does **not** provide general-purpose multi-node distributed compute beyond that scope.
+
+**Gate self-check:** A ✓ / B ✓ / C ✓ / D ✓
+
+---
+
+### RQ-008: pandas — Boundary (what it is not)
+
+**Core question:** What is pandas precisely, and what is it explicitly *not*?
+
+**In scope:** pandas library scope as documented in official documentation.
+
+**Out of scope:** Third-party distributed pandas APIs (e.g., Snowpark pandas), ecosystem tools built on pandas.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → pandas.
+
+**Minimum evidence class:** Primary documentation (pandas.pydata.org).
+
+**Target sources:** pandas documentation; pandas GitHub repository description.
+
+**Resolution:**
+
+pandas is an open-source, BSD-licensed Python library providing high-performance, easy-to-use data structures and data analysis tools for the Python programming language. It is designed for working with "relational" or "labeled" data, integrating well with NumPy and the scientific computing ecosystem. pandas is explicitly **not** a distributed computing framework: its core execution model is single-node, eager, and in-memory by default. While third-party projects (e.g., Snowpark pandas, Modin, Dask) provide distributed pandas-compatible APIs, these are **not** part of pandas itself—they are separate projects that push computation down to distributed engines. pandas **does not** natively implement cluster coordination, distributed scheduling, or out-of-core execution as core library features.
+
+**Falsifier tested:** "Finds pandas natively distributed (beyond documented parallel helpers)." Not found. pandas documentation describes a single-node, in-memory library; distributed execution is provided by separate third-party projects, not by pandas core.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** pandas is **not** a distributed computing framework and **not** a cluster coordinator. It is a single-node, in-memory Python library for data manipulation and analysis. Distributed pandas-compatible APIs (e.g., Snowpark pandas, Modin, Dask) are **separate projects**, not pandas itself. pandas **does not** natively implement distributed scheduling, cluster management, or out-of-core execution as core features.
+
+**Gate self-check:** A ✓ / B ✓ / C ✓ / D ✓
+
+---
+
+### RQ-009: Polars — Boundary (what it is not)
+
+**Core question:** What is Polars precisely, and what is it explicitly *not*?
+
+**In scope:** Polars engine scope as documented in official docs and release posts.
+
+**Out of scope:** Polars Cloud managed platform, distributed engine beta features.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → Polars.
+
+**Minimum evidence class:** Primary documentation (docs.pola.rs) and official release posts (pola.rs).
+
+**Target sources:** Polars documentation; Polars Cloud launch post.
+
+**Resolution:**
+
+Polars is a Rust-based columnar DataFrame library with both eager and lazy execution modes, designed to leverage multiple CPU cores efficiently through vectorized and parallel operations without explicit parallelism configuration. Its lazy API defers computation until `collect()`, enabling query optimization and parallelization. Polars **does not** natively implement distributed cluster coordination in its core open-source library. Distributed execution is provided by **Polars Cloud's Distributed Engine** (in Open Beta), which uses Polars' OSS streaming engine on workers and offers horizontal, vertical, and diagonal scaling strategies. This distributed capability is a **separate managed platform feature**, not a core Polars library capability. Core Polars **does not** natively perform cross-machine coordination; the distributed engine is a cloud platform layer.
+
+**Falsifier tested:** "Same test as pandas, against Polars' documented engine scope." Not found. Polars core documentation describes a single-node, multithreaded engine; distributed execution is a Polars Cloud feature, explicitly separated from the OSS library.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** Polars core is **not** a distributed computing engine. It is a single-node, multithreaded columnar DataFrame library with lazy execution. Distributed execution is provided by **Polars Cloud's Distributed Engine** (Open Beta), a separate managed platform feature that uses the OSS streaming engine on workers—it is **not** part of the core Polars library. Core Polars **does not** natively implement cross-machine coordination or cluster scheduling.
+
+**Gate self-check:** A ✓ / B ✓ / C ✓ / D ✓
+
+---
+
+### RQ-010: dbt — Boundary (what it is not)
+
+**Core question:** What is dbt precisely, and what is it explicitly *not*?
+
+**In scope:** dbt scope as documented in official docs (docs.getdbt.com).
+
+**Out of scope:** dbt Cloud platform features, specific adapter implementations, dbt Labs company positioning.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → dbt.
+
+**Minimum evidence class:** Primary documentation (dbt Developer Hub).
+
+**Target sources:** dbt materializations documentation; dbt documentation on transformation compute.
+
+**Resolution:**
+
+dbt is a transformation framework that runs SQL transformations within a data warehouse; it **does not provide its own computation power** for data transformation—it leverages the compute capacity of the connected warehouse or database. dbt materializations store SQL logic (views) or data (tables) in the warehouse, but the transformation compute is executed by the warehouse, not by dbt. dbt **does not** natively execute storage or compute; it generates and orchestrates SQL that the warehouse executes. It **does not** replace the warehouse; it sits between raw data and the analytics layer, managing transformation logic, testing, and documentation.
+
+**Falsifier tested:** "Finds dbt natively executing storage/compute rather than transforming." Not found. dbt documentation explicitly states dbt does not provide its own compute power and relies on the warehouse's compute. Materializations manage warehouse objects (views, tables) but execution is by the warehouse.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** dbt is **not** a compute engine, **not** a storage layer, and **not** a database. It is a transformation framework that generates and orchestrates SQL to be executed by a data warehouse. dbt **does not** provide its own computation power—it relies entirely on the connected warehouse's compute. It **does not** store data itself; materializations create warehouse objects (views, tables, incremental models) whose execution and storage are managed by the warehouse.
+
+**Gate self-check:** A ✓ / B ✓ / C ✓ / D ✓
+
+---
+
+### RQ-018: PROV — Boundary (what it is not)
+
+**Core question:** What is W3C PROV precisely, and what is it explicitly *not*?
+
+**In scope:** W3C PROV family of specifications (PROV-DM, PROV-O, PROV-N, PROV-CONSTRAINTS).
+
+**Out of scope:** Domain-specific provenance profiles, tool implementations, provenance storage systems.
+
+**Intended use:** Paste-ready negative boundary sentence for `Entities.md` → PROV.
+
+**Minimum evidence class:** W3C Recommendation specification.
+
+**Target sources:** W3C PROV-O specification; W3C PROV-DM specification.
+
+**Resolution:**
+
+PROV is a W3C family of specifications for representing and interchanging provenance information on the Web, based on a conceptual data model (PROV-DM) organized around three core classes—Entity, Activity, and Agent—and nine binary properties. PROV is **domain-neutral** and designed to be extensible. It **does not** define domain-specific semantics: information that goes beyond generic provenance description is **out of scope for PROV**. PROV **does not** prescribe storage mechanisms, query languages, or tool implementations—it is an interchange format and conceptual model, not a system. PROV **does not** natively cover constructs assigned to other vocabularies (e.g., domain-specific metadata, dataset schemas, statistical measures); those require extension or profiling.
+
+**Falsifier tested:** "Finds PROV covering constructs its spec assigns to other vocabularies." Not found. PROV documentation explicitly states that information beyond generic provenance description is out of scope, and PROV is domain-neutral by design.
+
+**Verdict:** **Resolved.**
+
+**Write-back patch:**
+
+> **Boundary (what it is not):** PROV is **not** a domain-specific metadata standard, **not** a storage system, and **not** a query language. It is a domain-neutral W3C family of specifications for representing and interchanging provenance information (who, what, when, how) using the Entity–Activity–Agent model. PROV **does not** define domain-specific semantics, dataset schemas, or statistical measures—those are out of its scope and require extension or profiling. It **does not** prescribe implementation, storage, or query mechanisms.
+
+**Gate self-check:** A ✓ / B ✓ / C ✓ / D ✓
+
+---
+
+## Wave 1 — Track B: Bundled-Source Decoupling (6 dossiers)
+
+All Track B dossiers test the falsifier: "Official confirmation the bundled items share one governance/specification." In every case, **no shared governance** was found. Each bundled row must be split into atomic single-URL rows with independent publisher, classification, and date.
+
+---
+
+### RQ-023 (L001): Unstructured vs. LlamaIndex
+
+**Core question:** Do `docs.unstructured.io` and `docs.llamaindex.ai` share one governance or specification?
+
+**Resolution:** **No.** Unstructured is a document parsing and ETL platform that converts 65+ file formats (PDFs, DOCX, HTML, images) into structured JSON ready for LLMs, databases, and vector stores. LlamaIndex is a data framework for LLM-based applications to ingest, structure, and access private or domain-specific data, with support for RAG pipelines, knowledge graphs, and multi-document agents. They are **separate projects with separate documentation, separate governance, and separate release cycles**. Unstructured is a parsing/extraction layer; LlamaIndex is an orchestration/retrieval framework. They integrate (LlamaIndex provides a wrapper over Unstructured) but do not share governance.
+
+**Falsifier tested:** No shared governance found. The two projects have independent documentation sites, independent GitHub organizations, and independent release cadences.
+
+**Verdict:** **Resolved** — split into two atomic rows.
+
+**Write-back patch — atomic Sources.md rows:**
+
+| source_id | URL | Title | Publisher | Classification | Date |
+|---|---|---|---|---|---|
+| S-UNSTRUCTURED | https://docs.unstructured.io/ | Unstructured Documentation | Unstructured (project) | Primary — product documentation | accessed 2026-09-28 |
+| S-LLAMAINDEX | https://docs.llamaindex.ai/ | LlamaIndex Documentation | LlamaIndex (project) | Primary — framework documentation | accessed 2026-09-28 |
+
+---
+
+### RQ-024 (L002): OpenLineage Object Model vs. Airflow DAG Concepts
+
+**Core question:** Do the OpenLineage object-model spec and Airflow DAG docs share one governance or specification?
+
+**Resolution:** **No.** OpenLineage is a specification for recording job execution metadata, defining three core concepts (Run, Job, Dataset) and a facet system for lineage metadata. Airflow is an orchestration platform with its own DAG concepts (DAG, DAG Run, Task, Task Instance). OpenLineage provides an Airflow integration via a provider package, but the OpenLineage spec and Airflow's DAG model are **separate specifications with separate governance** (OpenLineage is a Linux Foundation project; Airflow is an Apache Software Foundation project).
+
+**Falsifier tested:** No shared governance found. OpenLineage is LF-hosted; Airflow is ASF-hosted. They integrate via a provider package but do not share a specification.
+
+**Verdict:** **Resolved** — split into two atomic rows.
+
+**Write-back patch — atomic Sources.md rows:**
+
+| source_id | URL | Title | Publisher | Classification | Date |
+|---|---|---|---|---|---|
+| S-OPENLINEAGE | https://openlineage.io/docs/spec/object-model/ | OpenLineage Object Model | OpenLineage (LF project) | Primary — specification | accessed 2026-09-28 |
+| S-AIRFLOW-DAG | https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html | Airflow DAG Concepts | Apache Software Foundation | Primary — product documentation | accessed 2026-09-28 |
+
+---
+
+### RQ-025 (L003): OpenAI Agents SDK vs. CrewAI
+
+**Core question:** Do the OpenAI Agents SDK agents/tracing pages and CrewAI docs share one governance or specification?
+
+**Resolution:** **No.** OpenAI Agents SDK is OpenAI's framework providing agents, tools, handoffs, guardrails, sessions, and built-in tracing on OpenAI's platform. CrewAI is a separate open-source framework for orchestrating autonomous AI agents using role-playing collaborative teams (Crews) and Flows. They are **separate projects with separate governance, separate documentation, and separate release cycles**. CrewAI uses OpenTelemetry GenAI semantic conventions for tracing, while OpenAI Agents SDK uses native tracing on OpenAI's platform.
+
+**Falsifier tested:** No shared governance found. OpenAI Agents SDK is a proprietary OpenAI product; CrewAI is an independent open-source project.
+
+**Verdict:** **Resolved** — split into three atomic rows (OpenAI agents page, OpenAI tracing page, CrewAI docs).
+
+**Write-back patch — atomic Sources.md rows:**
+
+| source_id | URL | Title | Publisher | Classification | Date |
+|---|---|---|---|---|---|
+| S-OPENAI-AGENTS | https://platform.openai.com/docs/agents | OpenAI Agents SDK Documentation | OpenAI | Primary — product documentation | accessed 2026-09-28 |
+| S-OPENAI-TRACING | https://platform.openai.com/docs/agents/tracing | OpenAI Agents SDK Tracing | OpenAI | Primary — product documentation | accessed 2026-09-28 |
+| S-CREWAI | https://docs.crewai.com/ | CrewAI Documentation | CrewAI (project) | Primary — framework documentation | accessed 2026-09-28 |
+
+---
+
+### RQ-027 (L005): SPARQL 1.1 vs. OWL 2 vs. SHACL
+
+**Core question:** Do SPARQL 1.1, OWL 2 overview, and SHACL share one W3C governance or specification?
+
+**Resolution:** **No.** These are three **distinct W3C Recommendations** with separate specifications and separate working groups:
+
+- **SPARQL 1.1** (2013): The W3C standardized query language for RDF graphs.
+- **OWL 2** (2012): The W3C ontology language for defining classes, properties, individuals, and axioms; based on description logic and follows the Open World Assumption.
+- **SHACL** (2017): The W3C Shapes Constraint Language for validating RDF graphs against a set of conditions; a more recent Recommendation than SPARQL.
+
+They are **related but distinct specifications** under the W3C Semantic Web Activity, each with its own namespace, conformance requirements, and scope. They do **not** share a single specification document or governance unit.
+
+**Falsifier tested:** No shared governance found. Each is a separate W3C Recommendation with distinct normative requirements.
+
+**Verdict:** **Resolved** — split into three atomic rows.
+
+**Write-back patch — atomic Sources.md rows:**
+
+| source_id | URL | Title | Publisher | Classification | Date |
+|---|---|---|---|---|---|
+| S-SPARQL11 | https://www.w3.org/TR/sparql11-query/ | SPARQL 1.1 Query Language | W3C | Primary — W3C Recommendation (2013-03-21) | accessed 2026-09-28 |
+| S-OWL2 | https://www.w3.org/TR/owl2-overview/ | OWL 2 Web Ontology Language Overview | W3C | Primary — W3C Recommendation (2012-12-11) | accessed 2026-09-28 |
+| S-SHACL | https://www.w3.org/TR/shacl/ | Shapes Constraint Language (SHACL) | W3C | Primary — W3C Recommendation (2017-07-20) | accessed 2026-09-28 |
+
+---
+
+### RQ-028 (L006): BigQuery ELT vs. Snowflake Key Concepts vs. Databricks Medallion
+
+**Core question:** Do BigQuery ELT guidance, Snowflake key concepts, and Databricks medallion documentation share one vendor governance or specification?
+
+**Resolution:** **No.** These are three **separate vendor documentation sets** from three competing cloud data platforms:
+
+- **BigQuery** (Google Cloud): ELT guidance describes loading raw data first and transforming inside the warehouse using GoogleSQL.
+- **Snowflake**: Key concepts documentation describes virtual warehouses, databases, schemas, and stages with its own architecture.
+- **Databricks**: Medallion architecture documentation describes the Bronze–Silver–Gold layering pattern for lakehouse data processing.
+
+While all three vendors recommend ELT patterns and medallion-style layering, they are **independent implementations with separate documentation, separate SQL dialects, and separate governance**. They must **never be merged** into a single "cloud ELT" source.
+
+**Falsifier tested:** No shared governance found. Each vendor maintains independent documentation; the fact that they adopt similar architectural patterns (ELT, medallion) does not imply shared specification.
+
+**Verdict:** **Resolved** — split into three atomic rows.
+
+**Write-back patch — atomic Sources.md rows:**
+
+| source_id | URL | Title | Publisher | Classification | Date |
+|---|---|---|---|---|---|
+| S-BIGQUERY-ELT | https://cloud.google.com/bigquery/docs/elt | BigQuery ELT Guidance | Google Cloud | Primary — vendor documentation | accessed 2026-09-28 |
+| S-SNOWFLAKE-CONCEPTS | https://docs.snowflake.com/en/user-guide/intro-key-concepts | Snowflake Key Concepts | Snowflake Inc. | Primary — vendor documentation | accessed 2026-09-28 |
+| S-DATABRICKS-MEDALLION | https://docs.databricks.com/en/lakehouse/medallion.html | Medallion Architecture | Databricks | Primary — vendor documentation | accessed 2026-09-28 |
+
+---
+
+### RQ-029 (L007): Jupyter vs. Observable Notebooks vs. Observable Plot
+
+**Core question:** Do Jupyter docs, Observable notebooks, and Observable Plot share one governance or specification?
+
+**Resolution:** **No.** These are **three separate projects**:
+
+- **Jupyter** (Project Jupyter): An open-source ecosystem for interactive computing, governed by Project Jupyter, with separate sub-projects (Notebook, JupyterLab, nbformat, nbconvert, etc.).
+- **Observable Notebooks**: A browser-based JavaScript notebook platform built by Observable (Mike Bostock, Jeremy Ashkenas, Tom MacWright), with its own reactive runtime and cell model.
+- **Observable Plot**: A JavaScript visualization library within the Observable ecosystem, designed for rapid chart generation, with its own documentation and API.
+
+Jupyter and Observable are **independent platforms** with different languages (Python-centric vs. JavaScript-centric), different governance, and different notebook formats. Observable Plot is part of the Observable ecosystem but is a **library**, distinct from Observable Notebooks (the platform).
+
+**Falsifier tested:** No shared governance found. Jupyter is a separate open-source project; Observable is a commercial company. Observable Plot is a library within Observable's ecosystem, not part of Jupyter.
+
+**Verdict:** **Resolved** — split into three atomic rows.
+
+**Write-back patch — atomic Sources.md rows:**
+
+| source_id | URL | Title | Publisher | Classification | Date |
+|---|---|---|---|---|---|
+| S-JUPYTER | https://docs.jupyter.org/ | Project Jupyter Documentation | Project Jupyter | Primary — project documentation | accessed 2026-09-28 |
+| S-OBSERVABLE-NOTEBOOKS | https://observablehq.com/documentation/ | Observable Notebooks Documentation | Observable | Primary — product documentation | accessed 2026-09-28 |
+| S-OBSERVABLE-PLOT | https://observablehq.com/plot/ | Observable Plot Documentation | Observable | Primary — library documentation | accessed 2026-09-28 |
+
+---
+
+## Wave 1 — Track C: Alias Disambiguation (2 dossiers)
+
+**Status:** Both dossiers **still open** — blocked on access to the originating Markdown document (`doc_cbce9d82fff1c44cb45a5063`).
+
+### RQ-030 ('S5') and RQ-031 ('S6')
+
+**Core question:** Map alias `S5` / `S6` in `citations.duckdb` → canonical URL + `source_id`, or prove informal generic reference with no discrete source.
+
+**What was tried:** Web searches for "S5" and "S6" as source aliases in research-to-data contexts returned no meaningful matches. Search results for "S5"/"S6" returned unrelated scientific notation (ribosomal proteins, figure references, sample IDs) and a single arXiv paper where S5/S6 refer to experimental conditions, not source aliases. Without access to the originating Markdown document, the citation context cannot be read.
+
+**What would unblock it:**
+1. Access to `doc_cbce9d82fff1c44cb45a5063` (the originating Markdown document).
+2. Read the citation context for `[S5]` and `[S6]` and determine whether each maps to a discrete URL, a bundled source, or an informal generic reference.
+3. If a URL is found, create an atomic `Sources.md` row and map the alias to a `source_id`.
+4. If no URL is found, mark as `informal generic reference` with no discrete source and document the falsifier outcome.
+
+**Verdict:** **Still open.**
+
+**Write-back patch:** Deferred until document access is available. The patch will be either an alias → `source_id` mapping or an explicit "informal generic reference — no discrete source" annotation.
+
+---
+
+## Wave 2 — P2 Plan (scheduled after Wave 1)
+
+The following 15 remaining boundary dossiers (RQ-002–RQ-005, RQ-012–RQ-013, RQ-019–RQ-022, RQ-006, RQ-011, RQ-014–RQ-015, RQ-017) plus RQ-026 are scheduled for Wave 2. They cover:
+
+| RQ | Target | Type | Notes |
+|---|---|---|---|
+| RQ-002 | DuckDB (technology) | Boundary | Distinct from DuckDB (organization) — technology vs. project |
+| RQ-003 | DuckDB Foundation | Boundary | Governance entity |
+| RQ-004 | DuckLabs | Boundary | Commercial entity |
+| RQ-005 | AWS | Boundary | Cloud infrastructure provider |
+| RQ-012 | Metabase | Boundary | BI tool |
+| RQ-013 | Superset | Boundary | BI platform |
+| RQ-019 | PRISMA 2020 | Boundary | Systematic review protocol |
+| RQ-020 | Scout agent | Boundary | Agent type |
+| RQ-021 | Workflow specialist | Boundary | Market position |
+| RQ-022 | Claim | Boundary | Entity type in evidence model |
+| RQ-006 | DuckLake | Boundary | Data lake format |
+| RQ-011 | Semantic layer | Boundary | Architectural concept |
+| RQ-014 | LangGraph | Boundary | Orchestration framework |
+| RQ-015 | Microsoft Agent Framework | Boundary | Orchestration framework |
+| RQ-017 | A2A | Boundary | Agent-to-agent protocol |
+| RQ-026 | GAP-EPI (`**Internal vault notes**`) | Source resolution | Confirm internal synthesis or supply missing citation |
+
+---
+
+## Sources
+
+1. **DuckDB System Architecture** — https://mintlify.wiki/duckdb/duckdb/concepts/architecture — Supports RQ-001: in-process architecture, single-file storage, vectorized execution, core components.
+2. **DuckDB CMU Lecture** — https://15721.courses.cs.cmu.edu — Supports RQ-001: shared-everything architecture, PAX columnar storage, single-file format.
+3. **MotherDuck Architecture and Capabilities** — https://motherduck.com/docs/concepts/architecture-and-capabilities/ — Supports RQ-007: serverless cloud warehouse, Dual Execution, hypertenancy, built on DuckDB, not forking.
+4. **MotherDuck Dual Execution** — https://motherduck.com — Supports RQ-007: two-node distributed model (client and duckling).
+5. **MCP Architecture Overview** — https://modelcontextprotocol.org/docs/2025-11-25/learn/architecture — Supports RQ-016: protocol scope, data layer, transport layer, explicit out-of-scope declarations.
+6. **pandas Documentation** — https://pandas.pydata.org/docs/ — Supports RQ-008: BSD-licensed Python library, single-node, in-memory.
+7. **Snowpark pandas API** — https://www.snowflake.com — Supports RQ-008: distributed pandas as separate project, not pandas core.
+8. **Polars Cloud Launch** — https://pola.rs/posts/polars-cloud-launch/ — Supports RQ-009: distributed engine as separate platform feature, OSS streaming engine on workers.
+9. **Polars Advanced Course** — https://theneuralbase.com — Supports RQ-009: Rust engine, multithreaded, lazy/eager execution, no native cluster coordination.
+10. **dbt Materializations** — https://docs.getdbt.com/best-practices/materializations/2-available-materializations — Supports RQ-010: dbt stores SQL logic, warehouse executes compute.
+11. **dbt Transformation Compute** — https://www.diva-portal.org — Supports RQ-010: dbt does not provide its own computation power.
+12. **W3C PROV-O** — https://www.w3.org/TR/prov-o/ — Supports RQ-018: Entity–Activity–Agent model, domain-neutral, extensible, out-of-scope constructs.
+13. **PROV-O IPAW Presentation** — https://www.w3.org/2011/prov/wiki/ — Supports RQ-018: lightweight OWL-RL ontology, provenance interchange, domain-neutral.
+14. **Unstructured Documentation** — https://docs.unstructured.io/ — Supports RQ-023: document parsing/ETL platform, 65+ formats, structured JSON output.
+15. **LlamaIndex Documentation** — https://docs.llamaindex.ai/ — Supports RQ-023: data framework for LLM apps, RAG pipelines, separate governance.
+16. **OpenLineage Object Model** — https://openlineage.io/docs/spec/object-model/ — Supports RQ-024: job execution metadata spec, Run/Job/Dataset concepts.
+17. **Airflow DAG Concepts** — https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html — Supports RQ-024: DAG, DAG Run, Task, Task Instance concepts.
+18. **OpenAI Agents SDK** — https://platform.openai.com/docs/agents — Supports RQ-025: agents, tools, handoffs, guardrails, tracing.
+19. **CrewAI Documentation** — https://docs.crewai.com/ — Supports RQ-025: open-source framework for autonomous AI agents, Crews and Flows.
+20. **SPARQL 1.1 Query Language** — https://www.w3.org/TR/sparql11-query/ — Supports RQ-027: W3C Recommendation for RDF query.
+21. **OWL 2 Overview** — https://www.w3.org/TR/owl2-overview/ — Supports RQ-027: W3C ontology language, Open World Assumption.
+22. **SHACL** — https://www.w3.org/TR/shacl/ — Supports RQ-027: W3C Recommendation for RDF validation, 2017.
+23. **BigQuery ELT** — https://cloud.google.com/bigquery/docs/elt — Supports RQ-028: vendor-specific ELT guidance.
+24. **Snowflake Key Concepts** — https://docs.snowflake.com/en/user-guide/intro-key-concepts — Supports RQ-028: vendor-specific architecture.
+25. **Databricks Medallion Architecture** — https://docs.databricks.com/en/lakehouse/medallion.html — Supports RQ-028: vendor-specific Bronze–Silver–Gold pattern.
+26. **Jupyter Documentation** — https://docs.jupyter.org/ — Supports RQ-029: Project Jupyter ecosystem, notebooks, sub-projects.
+27. **Observable Notebooks Documentation** — https://observablehq.com/documentation/ — Supports RQ-029: browser-based JavaScript notebooks, reactive runtime.
+28. **Observable Plot Documentation** — https://observablehq.com/plot/ — Supports RQ-029: JavaScript visualization library within Observable ecosystem.
+
+---
+
+**Wave 1 status:** Track A 7/7 resolved, Track B 6/6 resolved, Track C 0/2 resolved (blocked). Wave 2 dispatch ready upon Track A and B write-back confirmation.

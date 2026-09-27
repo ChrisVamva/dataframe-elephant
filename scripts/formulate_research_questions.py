@@ -18,8 +18,11 @@ from src.followup_core import (  # noqa: E402
     build_research_agenda_markdown,
     formulate_question_from_gap,
     scan_duckdb_intelligence,
+    scan_stage2_claims,
     scan_stage2_entities,
     scan_stage2_extraction_log,
+    scan_stage2_metrics,
+    validate_questions,
 )
 
 
@@ -44,13 +47,19 @@ def run_formulation(
     entity_gaps = scan_stage2_entities(stage2_dir)
     print(f"   Found {len(entity_gaps)} entity boundary gaps (GAP-BND).")
 
+    metric_gaps = scan_stage2_metrics(stage2_dir)
+    print(f"   Found {len(metric_gaps)} metric condition gaps (GAP-CND).")
+
+    claim_gaps = scan_stage2_claims(stage2_dir)
+    print(f"   Found {len(claim_gaps)} claim gaps (GAP-EPI / GAP-FAL).")
+
     log_gaps = scan_stage2_extraction_log(stage2_dir)
-    print(f"   Found {len(log_gaps)} extraction log gaps (GAP-OPN / GAP-EPI).")
+    print(f"   Found {len(log_gaps)} extraction log gaps (GAP-OPN / GAP-EPI / GAP-CON).")
 
     db_gaps = scan_duckdb_intelligence(database_path)
     print(f"   Found {len(db_gaps)} citation database gaps (GAP-CON / GAP-EPI).")
 
-    all_gaps = entity_gaps + log_gaps + db_gaps
+    all_gaps = entity_gaps + metric_gaps + claim_gaps + log_gaps + db_gaps
     if not all_gaps:
         print("No gaps identified across Stage 2 and database.")
         return 0
@@ -74,29 +83,44 @@ def run_formulation(
 
     print(f"   Prioritization summary: {p1_count} P1 (Immediate), {p2_count} P2 (Scheduled), {p3_count} P3 (Backlog)")
 
+    # 2b. Quality gates before acceptance (FollowUpResearch §6 Step 2)
+    print("   Validating quality gates A-D (scope, falsifier, provenance, scores)...")
+    defects = validate_questions(questions)
+    if defects:
+        for defect in defects:
+            print(f"   GATE DEFECT: {defect}", file=sys.stderr)
+        print(f"Quality gate validation failed with {len(defects)} defect(s).", file=sys.stderr)
+        return 2
+    print("   All quality gates passed (A: scope, B: falsifier, C: provenance, D: scores).")
+
     # 3. Emit Markdown Outputs
     agenda_path = output_dir / "ResearchAgenda.md"
     print(f"\n4. Emitting Master Research Agenda to: {agenda_path}")
     agenda_content = build_research_agenda_markdown(questions)
     agenda_path.write_text(agenda_content, encoding="utf-8")
 
-    # Modular Thematic Packs
-    bnd_questions = [q for q in questions if q.gap.gap_code == "GAP-BND"]
-    src_questions = [q for q in questions if q.gap.gap_code != "GAP-BND"]
+    # Thematic packs per FollowUpResearch §7 deliverable layout.
+    packs = {
+        "Wave2_Entity_Boundaries.md": [q for q in questions if q.gap.gap_code == "GAP-BND"],
+        "Wave2_Benchmark_Conditions.md": [q for q in questions if q.gap.gap_code == "GAP-CND"],
+        "Wave2_Primary_Evidence_Gaps.md": [
+            q for q in questions if q.gap.gap_code in ("GAP-EPI", "GAP-FAL")
+        ],
+        "Wave2_Architectural_Open_Questions.md": [
+            q for q in questions if q.gap.gap_code in ("GAP-OPN", "GAP-CON")
+        ],
+    }
 
-    bnd_path = output_dir / "Wave2_Entity_Boundaries.md"
-    src_path = output_dir / "Wave2_Source_Decoupling.md"
-
-    bnd_path.write_text(build_research_agenda_markdown(bnd_questions), encoding="utf-8")
-    src_path.write_text(build_research_agenda_markdown(src_questions), encoding="utf-8")
-
-    print(f"   Emitted thematic pack: {bnd_path} ({len(bnd_questions)} questions)")
-    print(f"   Emitted thematic pack: {src_path} ({len(src_questions)} questions)")
+    for filename, pack_questions in packs.items():
+        pack_path = output_dir / filename
+        pack_path.write_text(build_research_agenda_markdown(pack_questions), encoding="utf-8")
+        print(f"   Emitted thematic pack: {pack_path} ({len(pack_questions)} questions)")
 
     print(f"\n[SUCCESS] Formulated {len(questions)} research questions in {output_dir}")
     print(f"  Master Agenda:    {agenda_path}")
-    print(f"  Entity Pack:      {bnd_path}")
-    print(f"  Source/Alias Pack:{src_path}\n")
+    for filename in packs:
+        print(f"  Pack:             {output_dir / filename}")
+    print()
     return 0
 
 

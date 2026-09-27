@@ -16,6 +16,8 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 - Single file: `.\.venv\Scripts\python.exe -m pytest src/tests/test_ingest_citations.py -q`
 - Rebuild citation DB (defaults: `research/raw` → `data/citations.duckdb` + `data/citation_ingestion_warnings.jsonl` via `schemas/citations.sql`):
   `.\.venv\Scripts\python.exe src/ingest_citations.py [--raw-dir PATH --database PATH --warnings PATH --schema PATH]`
+- Import Stage 2 (defaults: `research/raw/Stage 2` → `data/stage2.duckdb` + `data/stage2_ingestion_warnings.jsonl` via `schemas/stage2.sql`, per `Protocols/FromStagetoDatabases.md`):
+  `.\.venv\Scripts\python.exe scripts/import_stage2.py [--stage2-dir PATH --database PATH --warnings PATH --schema PATH]`
 - Archive dry-run first (safe): `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run`
 - Follow-ups: `.\.venv\Scripts\python.exe scripts/formulate_research_questions.py [--stage2-dir PATH --database PATH --output-dir PATH]`
 - Restore/inspect: `.\.venv\Scripts\python.exe scripts/restore_archive.py --archive <file.tar.gz.enc> --list` (add `--dest DIR [--overwrite]` to extract)
