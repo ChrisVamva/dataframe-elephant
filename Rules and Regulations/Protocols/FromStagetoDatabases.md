@@ -37,9 +37,12 @@ The purpose of this protocol is to:
 ## 2. Non-negotiable rules
 
 1. **Topology is fixed (Option A):** Stage 2 data goes into a dedicated
-   database, default `data/stage2.duckdb`, alongside the untouched
-   `data/citations.duckdb`. Extending `citations.duckdb` in place is forbidden
-   by this protocol.
+   database per extraction folder — default `data/stage2.duckdb` for
+   `research/raw/Stage 2/Extraction 1/` and `data/smarthome.duckdb` for
+   `research/raw/Stage 2/Extraction 2/` — alongside the untouched
+   `data/citations.duckdb`. All instances share the single canonical contract
+   `schemas/stage2.sql` (never forked per extraction). Extending
+   `citations.duckdb` in place is forbidden by this protocol.
 2. **Claims stay in the new DB:** `Claims.md` rows live only in the Stage 2
    database. Backfilling them into `citations.duckdb` `claim`/`claim_source`
    is forbidden (two copies drift; rebuilds couple).
@@ -82,10 +85,17 @@ The purpose of this protocol is to:
 Every file must open with the standard Stage 2 frontmatter (`stage: 2`,
 `extracted_from`, `extractor`, `gate_results` for gates 1–7).
 
-### 3.2 Outputs — Stage 2 database
+### 3.2 Outputs — Stage 2 databases
 
-Default `data/stage2.duckdb` via `schemas/stage2.sql`, plus a warnings
-artifact (default `data/stage2_ingestion_warnings.jsonl`):
+One database per extraction folder, each built with the shared
+`schemas/stage2.sql`, plus its own warnings artifact:
+
+| Extraction folder | Database | Warnings artifact |
+| --- | --- | --- |
+| `research/raw/Stage 2/Extraction 1/` | `data/stage2.duckdb` | `data/stage2_ingestion_warnings.jsonl` |
+| `research/raw/Stage 2/Extraction 2/` | `data/smarthome.duckdb` | `data/smarthome_ingestion_warnings.jsonl` |
+
+Each database carries the same eleven tables:
 
 | Table | One row per | Key columns |
 | --- | --- | --- |
@@ -147,14 +157,23 @@ Reuse the `stable_id(kind, value)` SHA-256 scheme from
 
 ### Step 5: Postflight
 
-Report per-table row counts and warning counts to stdout. Creating
-additional databases is the same command with different paths:
+Report per-table row counts and warning counts to stdout. Each extraction
+folder is built into its own database with the same command and different
+paths:
 
 ```powershell
+# Extraction 1 -> data/stage2.duckdb
 .\.venv\Scripts\python.exe scripts/import_stage2.py `
-  --stage2-dir "research/raw/Stage 2" `
+  --stage2-dir "research/raw/Stage 2/Extraction 1" `
   --database "data/stage2.duckdb" `
   --warnings "data/stage2_ingestion_warnings.jsonl" `
+  --schema "schemas/stage2.sql"
+
+# Extraction 2 -> data/smarthome.duckdb
+.\.venv\Scripts\python.exe scripts/import_stage2.py `
+  --stage2-dir "research/raw/Stage 2/Extraction 2" `
+  --database "data/smarthome.duckdb" `
+  --warnings "data/smarthome_ingestion_warnings.jsonl" `
   --schema "schemas/stage2.sql"
 ```
 
@@ -202,6 +221,12 @@ Re-run this import (or add a new `--database` target) when any of the
 following occurs:
 
 - Any Stage 2 file is revised, added, or re-gated.
+- A new extraction folder appears under `research/raw/Stage 2/` — create a new
+  `--database` / `--warnings` pair for it and register it in
+  `PRODUCTION_DATABASES` (`src/db_export_core.py`), `--which` choices
+  (`scripts/export_databases.py`), `data/README.md`, and
+  [ExportDatabase.md](ExportDatabase.md) §3.1–§3.2 rather than extending an
+  existing extraction's database.
 - `schemas/stage2.sql` changes (new table, column, or view).
 - The importer introduces a new warning type affecting table structure.
 - A FollowUpResearch wave resolves a gap recorded in `extraction_decision`.

@@ -1,7 +1,7 @@
 """Core exporter: read-only DuckDB -> timestamped CSV + Parquet bundles.
 
 Per Rules and Regulations/Protocols/ExportDatabase.md (implements
-Commander Deck/Plans/ExportPlan): the two production databases (citations.duckdb, stage2.duckdb) are exported
+Commander Deck/Plans/ExportPlan): the production databases (citations.duckdb, stage2.duckdb, smarthome.duckdb) are exported
 into timestamped, gitignored bundles under data/exports/ via DuckDB's native
 EXPORT DATABASE (restorable schema.sql + load.sql + table files), plus
 read-only snapshots of each view's query results. Sources stay unchanged.
@@ -32,6 +32,12 @@ PRODUCTION_DATABASES: dict[str, dict[str, str]] = {
         "database": "data/stage2.duckdb",
         "schema": "schemas/stage2.sql",
         "warnings": "data/stage2_ingestion_warnings.jsonl",
+        "run_table": "stage2_run",
+    },
+    "smarthome": {
+        "database": "data/smarthome.duckdb",
+        "schema": "schemas/stage2.sql",
+        "warnings": "data/smarthome_ingestion_warnings.jsonl",
         "run_table": "stage2_run",
     },
 }

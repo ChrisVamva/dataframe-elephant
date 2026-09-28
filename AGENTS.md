@@ -1,40 +1,115 @@
 # AGENTS.md — dataframe-elephant
 
+## Project Overview
 Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation intelligence in `data/` → follow-up agenda in `research/processed/`, plus an encrypted-archive (ECA) pipeline. Core logic in `src/*_core.py`, thin CLIs in `scripts/`.
 
-## Interpreter (Windows)
+## Critical Entry Points
 
-- Plain `python` may resolve to a system 3.13 without deps (verified: no `duckdb`). Use the repo venv:
-  `.\.venv\Scripts\python.exe -m pytest src/tests -q`
-  `.\.venv\Scripts\python.exe src/ingest_citations.py`
-- If deps missing: `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` (`duckdb`, `pytest`, `hypothesis`, `cryptography`).
-- `data/README.md` mentions a `datascience` conda env, but the verified working interpreter here is `.venv`; prefer whichever env imports `duckdb`.
+### Interpreter (Windows)
+- **Use the repo venv**: `.\.venv\Scripts\python.exe` (system 3.13 lacks deps like duckdb)
+- **Install deps**: `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` (duckdb, pytest, hypothesis, cryptography)
+- **Test setup**: `.\.venv\Scripts\python.exe -m pytest src/tests -q`
 
-## Commands (run from repo root; `pytest.ini` sets `pythonpath=.`)
+### Monorepo Structure
+- **Entrypoint files**:
+  - `src/ingest_citations.py` - Stage 1 ingestion to citations.duckdb
+  - `src/stage2_import_core.py` - Stage 2 import (per extraction folder) to stage2.duckdb / smarthome.duckdb  
+  - `src/archive_core.py` - Core ECA encryption/compression library
+  - `src/db_export_core.py` - Native DuckDB export bundles
+- **Scripts directory**: Thin CLIs that import core modules (mirroring `src/*_core.py` pattern)
 
-- All tests: `.\.venv\Scripts\python.exe -m pytest src/tests -q`
-- Single file: `.\.venv\Scripts\python.exe -m pytest src/tests/test_ingest_citations.py -q`
-- Rebuild citation DB (defaults: `research/raw` → `data/citations.duckdb` + `data/citation_ingestion_warnings.jsonl` via `schemas/citations.sql`):
-  `.\.venv\Scripts\python.exe src/ingest_citations.py [--raw-dir PATH --database PATH --warnings PATH --schema PATH]`
-- Import Stage 2 (defaults: `research/raw/Stage 2` → `data/stage2.duckdb` + `data/stage2_ingestion_warnings.jsonl` via `schemas/stage2.sql`, per `Protocols/FromStagetoDatabases.md`):
-  `.\.venv\Scripts\python.exe scripts/import_stage2.py [--stage2-dir PATH --database PATH --warnings PATH --schema PATH]`
-- Archive dry-run first (safe): `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run`
-- Archive Commander Deck (dry-run first): `.\\.venv\\Scripts\\python.exe scripts/archive_stage1.py --source "Rules and Regulations/Commander Deck/Archive" --dest "Rules and Regulations/Commander Deck/Archive" --prefix commander_deck_archive --dry-run` (then `--keep-originals`, then verified delete)
-- Follow-ups: `.\.venv\Scripts\python.exe scripts/formulate_research_questions.py [--stage2-dir PATH --database PATH --output-dir PATH]`
-- Assemble a prompt (inlines `lib/` partials; `--out` defaults to stdout): `.\.venv\Scripts\python.exe scripts/assemble_prompt.py [--template NAME] [--var NAME=VALUE ...] [--context FILE] [--out PATH]`
-- Restore/inspect: `.\.venv\Scripts\python.exe scripts/restore_archive.py --archive <file.tar.gz.enc> --list` (add `--dest DIR [--overwrite]` to extract)
-- Export databases (CSV + Parquet, gitignored; per `Rules and Regulations/Protocols/ExportDatabase.md`): `.\.venv\Scripts\python.exe scripts/export_databases.py [--which all|citations|stage2] [--formats csv,parquet] [--overwrite] [--no-verify]`
+## Essential Commands
 
-## Gotchas that will bite
+### Database Operations
+- **Citation DB**: `.\.venv\Scripts\python.exe src/ingest_citations.py`
+- **Stage 2 DB (Extraction 1)**: `.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 1" --database "data/stage2.duckdb" --warnings "data/stage2_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"`
+- **Smart-home DB (Extraction 2)**: `.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 2" --database "data/smarthome.duckdb" --warnings "data/smarthome_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"`
+- **Archive**: `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run` (ALWAYS start with dry-run!)
 
-- `scripts/archive_stage1.py` **deletes source `.md` files after a verified roundtrip** unless `--keep-originals` or `--dry-run`. Never run it against real data without one of those flags first.
-- Archive passphrase order: `--passphrase` flag → `$ARCHIVE_PASSPHRASE` env → `.env` file (`ARCHIVE_PASSPHRASE=...`, gitignored, never commit) → interactive prompt. `restore_archive.py` prompts once (no confirm); `archive_stage1.py` prompts twice.
-- ECA key derivation is PBKDF2-HMAC-SHA256 at 600k iterations — archive/encrypt tests are slow; the hypothesis roundtrip tests (`test_archive_roundtrip.py`, `test_ingest_citations.py` Wave 6) are the expensive suite.
-- `src/ingest_citations.py:build_database` writes via temp file + atomic replace, carries forward unchanged files by SHA-256 cache, and derives `run_id` from content — identical corpus ⇒ identical `run_id`. A broken schema leaves the existing DB untouched (rollback test covers this).
-- Parser does **no fuzzy matching by design**: publisher-only URLs, multi-URL cells, truncated URLs, and unmapped classifications produce `unresolved`/`ambiguous` rows + `ingestion_warning` entries, not sources. Claim tables require `claim` + `claim type` + `confidence` columns or they are skipped with an `unsupported_table_shape` warning. Do not infer claim links from prose.
-- `First-Ratings.md` is classified `internal_evaluation` and excluded from external recurrence/claims. `source.status`/`directness` stay `NULL` (not `"unknown"`) when unrecorded — preserve that distinction.
-- `build_database` also ingests `analysis/**/*.md` when `raw_dir` is under repo root (see `ROOT`-relative `candidate_roots`); tests monkeypatch `ingest_citations.ROOT` to isolate this.
-- `schemas/*.sql` and `analysis/*.sql` are **DuckDB dialect** (`CREATE OR REPLACE VIEW`, `FILTER (WHERE ...)`, `ADD COLUMN IF NOT EXISTS`) — don't "fix" to T-SQL. `.vscode/settings.json` already disables the mssql T-SQL checker for these paths.
-- Derived artifacts `*.duckdb`, `*.jsonl`, `.env` are gitignored; don't commit `data/citations.duckdb` or passphrases.
-- `data/exports/` bundles are derived artifacts (gitignored); each run dir carries its own `manifest.json` + `README.md`. The `*.duckdb` files remain the source of truth; exports get no ECA encryption by default.
-- CSV export fidelity caveat: empty strings collapse to NULL in nullable columns (DuckDB CSV semantics); Parquet is exact. `verify_bundle` normalizes for this; don't "fix" by hand-editing CSVs.
+### Prompt Library
+- **Assemble a prompt**: `.\.venv\Scripts\python.exe scripts/assemble_prompt.py --template followup_dispatch --out prompts/dispatch/<date>_wave2.md`
+- **Follow-up agenda**: `.\.venv\Scripts\python.exe scripts/formulate_research_questions.py --stage2-dir "research/raw/Stage 2/Extraction 1" --output-dir "research/processed/FollowUps"`
+
+### Testing
+- **Full suite**: `.\.venv\Scripts\python.exe -m pytest src/tests -q`
+- **Export focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_export_databases.py -q`
+- **Export focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_archive_roundtrip.py -q`
+
+### Export Protocol
+- **Full export**: `.\.venv\Scripts\python.exe scripts/export_databases.py`
+- **Partial options**: `--which citations|stage2|smarthome` `--formats csv,parquet` `--overwrite` `--no-verify` (diagnostics only)
+
+## Gotchas That Will Bite
+
+### Archive Operations
+- **Delete risk**: `archive_stage1.py` **deletes source `.md` files** after verified roundtrip unless `--keep-originals` or `--dry-run`
+- **Passphrase order**: `--passphrase` → `$ARCHIVE_PASSPHRASE` env → `.env` → interactive prompt (archive prompts twice!)
+- **ECA slowness**: 600k PBKDF2 iterations make archive/encrypt tests expensive
+
+### Data Integrity
+- **Source preservation**: `build_database` uses temp file + atomic replace, carries forward unchanged files by SHA-256 cache
+- **Schema safety**: Broken schema leaves existing DB untouched (rollback test covers this)
+- **CSV vs Parquet**: CSV collapses empty strings to NULL in nullable columns; Parquet preserves NULL-vs-empty exactly
+
+### DuckDB Specifics
+- **Dialect only**: `schemas/*.sql` uses DuckDB syntax (`CREATE OR REPLACE VIEW`, `FILTER (WHERE ...)`, `ADD COLUMN IF NOT EXISTS`)
+- **Parsing rules**: No fuzzy matching by design: publisher-only URLs, multi-URL cells, truncated URLs, unmapped classifications produce `unresolved`/`ambiguous` rows + `ingestion_warning` entries
+- **Claim requirement**: Claim tables require `claim` + `claim type` + `confidence` columns or they are skipped with `unsupported_table_shape` warning
+- **Internal evaluation**: `First-Ratings.md` excluded from external recurrence/claims; `source.status`/`directness` stay `NULL` when unrecorded
+
+### Environment & Testing
+- **pytest.ini**: Sets `pythonpath=.` - always run from repo root
+- **Monkeypatching**: Tests monkeypatch `ingest_citations.ROOT` to isolate `analysis/**/*.md` ingestion
+- **ECA tests**: Hypothesis roundtrip tests (`test_archive_roundtrip.py`, `test_ingest_citations.py` Wave 6) are the expensive suite
+
+## Architecture Notes
+
+### Multi-Database Topology
+- **Option A (fixed)**: Stage 2 data goes into dedicated databases, one per extraction folder, alongside untouched `data/citations.duckdb`: `data/stage2.duckdb` (Extraction 1) and `data/smarthome.duckdb` (Extraction 2)
+- **Extraction folders**: `research/raw/Stage 2/Extraction 1/`, `research/raw/Stage 2/Extraction 2/` — the importer does not recurse, so `--stage2-dir` must name the leaf folder holding the seven contract files
+- **Stage 2 contents**: `Entities.md`, `Metrics.md`, `Claims.md`, `Sources.md`, `Predicates.md`, `WorkflowMap.md`, `ExtractionLog.md` (identical contract for every extraction; `schemas/stage2.sql` is shared, never forked)
+
+### Export Protocol
+- **Sources of truth**: `data/citations.duckdb`, `data/stage2.duckdb` and `data/smarthome.duckdb` only
+- **Export quality gates**: 8 gates (G1-G8) with specific failure modes and recovery steps
+- **Verification**: Every bundle re-imports into fresh temp database and compares schema, contents, views, FK checks
+
+### File Structure Ownership
+- **research/raw/** → Raw Markdown files, Stage 1 archives
+- **research/processed/** → Cleaned research for analysis  
+- **data/** → Dataset snapshots (input/output, fixtures)
+- **schemas/*.sql** → DuckDB-only canonical table/view definitions
+- **analysis/*.sql** → DuckDB-only analysis queries and reports
+
+## Development Workflow
+
+### Command Order Matters
+1. **Validate first**: Always start archive operations with `--dry-run`
+2. **Export flow**: `lint -> typecheck -> test -> export` (order matters)
+3. **Testing**: Run focused tests before full suite (`test_export_databases.py`, `test_archive_roundtrip.py`)
+
+### Environment Setup
+- **Prefer repo venv**: `.\.venv\Scripts\python.exe` over system python
+- **if conda**: `conda activate datascience` is documented in `data/README.md` but `.venv` is verified working
+
+### Derived Artifacts
+- **Gitignored**: `*.duckdb`, `*.jsonl`, `.env`, `data/exports/`
+- **Source of truth**: Only `data/citations.duckdb`, `data/stage2.duckdb` and `data/smarthome.duckdb` are authoritative
+- **Exports**: One timestamped run directory per export, with `manifest.json` audit trail
+
+## What to Avoid
+
+### Common Mistakes
+- Running plain `python` instead of repo venv interpreter
+- Forgetting `--dry-run` on archive operations
+- Treating exports as source of truth
+- Converting DuckDB SQL to T-SQL
+- Editing hand-generated CSV/Parquet payloads
+- Running production databases with multiple writers
+
+### Protocol Violations
+- Don't run archive against real data without `--keep-originals` or `--dry-run`
+- Don't edit production databases to suit exports
+- Don't present view snapshots as source tables
+- Don't commit derived artifacts (`data/exports/`, `*.duckdb` files)
+- Don't use automatic ECA encryption for exports by default

@@ -129,8 +129,8 @@ def main() -> None:
     parser.add_argument(
         "--stage2-dir",
         type=Path,
-        default=PROJECT_ROOT / "research" / "raw" / "Stage 2",
-        help="Directory containing Stage 2 extraction files (default: research/raw/Stage 2)",
+        default=PROJECT_ROOT / "research" / "raw" / "Stage 2" / "Extraction 1",
+        help="Directory containing Stage 2 extraction files (default: research/raw/Stage 2/Extraction 1)",
     )
     parser.add_argument(
         "--database",

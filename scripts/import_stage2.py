@@ -1,7 +1,10 @@
-"""CLI: import research/raw/Stage 2/ into a typed DuckDB database.
+"""CLI: import one Stage 2 extraction folder into a typed DuckDB database.
 
-Implements Protocols/FromStagetoDatabases.md (Option A: dedicated database,
-default data/stage2.duckdb; citations.duckdb is never touched).
+Implements Protocols/FromStagetoDatabases.md (Option A: one dedicated database
+per extraction folder, default data/stage2.duckdb for Extraction 1;
+citations.duckdb is never touched). Extraction 2 is built with explicit
+--stage2-dir / --database / --warnings paths into data/smarthome.duckdb; both
+databases share schemas/stage2.sql.
 """
 
 from __future__ import annotations
@@ -20,7 +23,8 @@ from src.stage2_import_core import Stage2ImportError, build_stage2_database  # n
 def main() -> None:
     parser = argparse.ArgumentParser(description="Import Stage 2 extraction files into DuckDB.")
     parser.add_argument("--stage2-dir", type=Path,
-                        default=PROJECT_ROOT / "research" / "raw" / "Stage 2")
+                        default=PROJECT_ROOT / "research" / "raw" / "Stage 2"
+                        / "Extraction 1")
     parser.add_argument("--database", type=Path,
                         default=PROJECT_ROOT / "data" / "stage2.duckdb")
     parser.add_argument("--warnings", type=Path,

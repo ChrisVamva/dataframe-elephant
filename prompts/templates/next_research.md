@@ -8,9 +8,9 @@ protocol_refs:
    - Rules and Regulations/Protocols/FromStagetoDatabases.md
 inputs:
   - research/processed/FollowUps/ResearchAgenda.md
-  - research/raw/Stage 2/Sources.md
-  - research/raw/Stage 2/ExtractionLog.md
-  - research/raw/Stage 2/Metrics.md
+  - research/raw/Stage 2/Extraction 1/Sources.md
+  - research/raw/Stage 2/Extraction 1/ExtractionLog.md
+  - research/raw/Stage 2/Extraction 1/Metrics.md
 partials:
   - lib/role_research_agent.md
   - lib/evidence_rules.md
@@ -26,7 +26,7 @@ partials:
 
 Your mission is to resolve open research questions and gaps formulated in `research/processed/FollowUps/ResearchAgenda.md`, conforming to `Rules and Regulations/Protocols/FollowUpResearch.md`, `Rules and Regulations/Protocols/Research-Evaluation.md`, and `Rules and Regulations/Protocols/FromStagetoDatabases.md`.
 
-Every output must be a **concrete, inspectable research dossier** with paste-ready patches for the Stage 2 extraction layer (`research/raw/Stage 2/`) and the DuckDB citation intelligence database (`data/citations.duckdb` and `data/stage2.duckdb`).
+Every output must be a **concrete, inspectable research dossier** with paste-ready patches for the Stage 2 extraction layer (`research/raw/Stage 2/Extraction 1/`) and the DuckDB databases (`data/citations.duckdb`, `data/stage2.duckdb`, `data/smarthome.duckdb`).
 
 ---
 
@@ -35,7 +35,7 @@ Every output must be a **concrete, inspectable research dossier** with paste-rea
 | Previous Bottleneck | Operational Fix in This Prompt |
 |---|---|
 | **Scope Overload:** Prompt dumped 31 complex dossiers in one turn without execution boundaries. | **Batched Execution:** Execute in targeted batches (Batch 1: Core Boundaries; Batch 2: Source Decoupling; Batch 3: Aliases). |
-| **Track C Dead-End:** Agent searched web for `doc_cbce9d82fff1c44cb45a5063` and stalled. | **Local Context Map:** `doc_cbce9d82fff1c44cb45a5063` is the DuckDB document hash for `research/raw/Stage 2/Sources.md`. S5 and S6 are local vault/nanopub citations already present in the workspace. |
+| **Track C Dead-End:** Agent searched web for `doc_cbce9d82fff1c44cb45a5063` and stalled. | **Local Context Map:** `doc_cbce9d82fff1c44cb45a5063` is the recorded DuckDB document id for the Stage 2 `Sources.md` file, now at `research/raw/Stage 2/Extraction 1/Sources.md` (the id was minted before the extraction folders were split; it stays stable because it hashes the recorded path). S5 and S6 are local vault/nanopub citations already present in the workspace. |
 | **Vague Deliverables:** Returned unstructured prose that could not be injected into Stage 2 tables. | **Standardized Schema Shapes:** Every dossier must output paste-ready Markdown table rows matching the Stage 2 schema. |
 | **Unanchored Falsification:** Claims lacked actionable falsification conditions. | **Explicit Falsifier Testing:** Check whether observable facts falsify existing assumptions before recording conclusions. |
 
@@ -126,15 +126,15 @@ Decompose bundled multi-URL source entries from `ExtractionLog.md` (L001–L007)
 
 ### Batch 3: Source Alias Disambiguation & Epistemic Resolution (`GAP-CON` / `GAP-EPI`)
 
-Resolve unmapped database aliases and unlinked citations from `data/citations.duckdb` and `research/raw/Stage 2/Sources.md`.
+Resolve unmapped database aliases and unlinked citations from `data/citations.duckdb` and `research/raw/Stage 2/Extraction 1/Sources.md`.
 
 #### Targets:
 1. **RQ-030: Citation Alias `S5`**
-   - **Local Provenance:** Mapped in `research/raw/Stage 2/Sources.md` row S5.
+   - **Local Provenance:** Mapped in `research/raw/Stage 2/Extraction 1/Sources.md` row S5.
    - **True Nature:** `**Internal vault notes** (synthesis sources, not external evidence): [[ANT GP H]], [[C]], [[DPS]], [[FAI]], [[Q]], [[OP MS 1.3F]], [[DC L5.6]], [[CP L6]], [[G0]]–[[G3]], [[Citations/Citation]], [[Citations/Report]]`.
    - **Resolution Action:** Confirm classification as `Internal Synthesis / Repository Corpus`, URL as empty/internal, and resolve alias mapping in `source_alias` as `internal_vault_notes`.
 2. **RQ-031: Citation Alias `S6`**
-   - **Local Provenance:** Mapped in `research/raw/Stage 2/Sources.md` row S6.
+   - **Local Provenance:** Mapped in `research/raw/Stage 2/Extraction 1/Sources.md` row S6.
    - **True Nature:** `Nanopublication guidelines (nanopub.net working draft) and the nanopublication/PROV-K structure recorded in [[G1]]–[[G3]]`.
    - **Resolution Action:** Map canonical URL `https://nanopub.net/guidelines/working_draft/`, publisher `Nanopublication Community`, classification `Primary (working draft / specification)`, separate internal PROV-K notes into distinct record.
 3. **RQ-026: Evidence Validation for Internal Vault Notes (`GAP-EPI`)**

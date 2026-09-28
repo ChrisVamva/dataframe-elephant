@@ -9,7 +9,7 @@
 After any write-back into Stage 2 or the citation corpus:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/import_stage2.py
+.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 1" --database "data/stage2.duckdb" --warnings "data/stage2_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"
 .\.venv\Scripts\python.exe src/ingest_citations.py
 ```
 

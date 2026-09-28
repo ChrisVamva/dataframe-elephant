@@ -1,7 +1,7 @@
 # `prompts/` — prompt library (index of record)
 
-The single home for reusable prompt assets. The Commander Deck folder
-(`Rules and Regulations/Commander Deck/prompts/`) holds only stubs and session pointers.
+The single home for reusable prompt assets. The nested transitional folder
+(`prompts/prompts/`) holds only stubs and session pointers.
 
 ```
 prompts/

@@ -1,6 +1,6 @@
 ---
 status: draft
-scope: Rules and Regulations/Commander Deck/prompts/
+scope: prompts/prompts/
 snapshot_date: 2026-09-28
 maintainer: workspace maintainer (personal name not recorded)
 ---
@@ -10,10 +10,10 @@ maintainer: workspace maintainer (personal name not recorded)
 ## Document Control
 
 - **Status:** draft pending an independent reader check
-- **Covered folder:** `Rules and Regulations/Commander Deck/prompts/`
+- **Covered folder:** `prompts/prompts/`
 - **Snapshot / review date:** 2026-09-28
 - **Maintainer:** workspace maintainer (personal name not recorded)
-- **Intended reader and use:** anyone locating or maintaining Commander Deck prompt pointers; explains which files here remain operational and where canonical prompt content is owned
+- **Intended reader and use:** anyone locating or maintaining the prompt-pointer stubs; explains which files here remain operational and where canonical prompt content is owned
 - **Review triggers:** a pointer is added, removed, renamed, retargeted, or reactivated; the prompt library changes location; or the prompt-folder README changes its role
 
 ## Purpose and Authority Boundary
@@ -51,7 +51,7 @@ The covered folder has five Markdown files as of this snapshot:
 
 The repository-level [`prompts/README.md`](../../../prompts/README.md) calls
 `prompts/` the single home for reusable prompt assets and describes this
-Commander Deck folder as containing only stubs and session pointers. It
+nested transitional folder as containing only stubs and session pointers. It
 identifies the templates and shared partials, specifies the template lifecycle,
 and states that dispatch data is generated rather than stored in templates.
 

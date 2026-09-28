@@ -9,6 +9,7 @@ import duckdb
 import pytest
 
 from src.db_export_core import (
+    PRODUCTION_DATABASES,
     ExportError,
     export_all,
     export_database_bundle,
@@ -16,6 +17,8 @@ from src.db_export_core import (
     inventory_database,
     verify_bundle,
 )
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _mini_db(path: Path) -> None:
@@ -100,12 +103,32 @@ def test_verify_detects_schema_mismatch(tmp_path: Path) -> None:
         verify_bundle(bundle, inv2, tmp_path / "vtmp2")
 
 
+def test_production_registry_covers_every_stage2_extraction() -> None:
+    """Option A: one registered database per Stage 2 extraction folder."""
+    assert set(PRODUCTION_DATABASES) == {"citations", "stage2", "smarthome"}
+
+    extractions = sorted(
+        p.name for p in (ROOT / "research" / "raw" / "Stage 2").iterdir() if p.is_dir()
+    )
+    assert extractions == ["Extraction 1", "Extraction 2"]
+
+    shared_schema = (ROOT / "schemas" / "stage2.sql").read_text(encoding="utf-8")
+    for name in ("stage2", "smarthome"):
+        spec = PRODUCTION_DATABASES[name]
+        assert (ROOT / spec["database"]).is_file(), spec["database"]
+        assert (ROOT / spec["warnings"]).is_file(), spec["warnings"]
+        assert spec["schema"] == "schemas/stage2.sql", name
+        assert spec["run_table"] == "stage2_run", name
+        # The Stage 2 contract is shared, never forked per extraction.
+        assert (ROOT / spec["schema"]).read_text(encoding="utf-8") == shared_schema, name
+
+
 def test_export_all_production_end_to_end(tmp_path: Path) -> None:
     out = export_all(tmp_path / "exports", which="all", formats=("csv", "parquet"),
                      overwrite=False, verify=True, timestamp="test-suite-probe")
     run_dir = Path(out["run_dir"])
     assert run_dir.is_dir()
-    for name in ("citations", "stage2"):
+    for name in ("citations", "stage2", "smarthome"):
         for fmt in ("csv", "parquet"):
             assert (run_dir / f"{name}_{fmt}" / "schema.sql").is_file()
         assert (run_dir / "views" / name).is_dir()

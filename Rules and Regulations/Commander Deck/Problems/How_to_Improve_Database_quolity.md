@@ -6,6 +6,9 @@
 **Companion documents:** [Report1.md](Report1.md) (code-level review, 2026-09-27),
 [ProblemPrompts.md](ProblemPrompts.md) (PP-001, workflow problem)
 **Status:** open, for action
+**Path note:** the Stage 2 inputs cited below (`research/raw/Stage 2/*.md`) were moved
+into `research/raw/Stage 2/Extraction 1/` on 2026-09-28 when a second extraction
+folder was added; the measurements below predate that move and are unchanged by it.
 
 ---
 

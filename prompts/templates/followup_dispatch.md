@@ -11,9 +11,9 @@ inputs:
   - research/processed/FollowUps/Wave2_Architectural_Open_Questions.md
   - research/processed/FollowUps/Wave2_Primary_Evidence_Gaps.md
   - research/processed/FollowUps/Wave2_Benchmark_Conditions.md
-  - research/raw/Stage 2/Entities.md
-  - research/raw/Stage 2/Sources.md
-  - research/raw/Stage 2/ExtractionLog.md
+  - research/raw/Stage 2/Extraction 1/Entities.md
+  - research/raw/Stage 2/Extraction 1/Sources.md
+  - research/raw/Stage 2/Extraction 1/ExtractionLog.md
 partials:
   - lib/role_research_agent.md
   - lib/evidence_rules.md
@@ -43,9 +43,10 @@ database. Governed by `Rules and Regulations/Protocols/FollowUpResearch.md` and 
    `research/processed/FollowUps/Wave2_Architectural_Open_Questions.md` (8),
    `research/processed/FollowUps/Wave2_Primary_Evidence_Gaps.md` (1),
    `research/processed/FollowUps/Wave2_Benchmark_Conditions.md` (0 — nothing to do).
-3. Triggers: `research/raw/Stage 2/Entities.md`, `research/raw/Stage 2/Sources.md`,
-   `research/raw/Stage 2/ExtractionLog.md` (L001–L007, L004), and `data/citations.duckdb`
-   (`source_alias` unresolved S5/S6).
+3. Triggers: `research/raw/Stage 2/Extraction 1/Entities.md`, `research/raw/Stage 2/Extraction 1/Sources.md`,
+   `research/raw/Stage 2/Extraction 1/ExtractionLog.md` (L001–L007, L004), `data/citations.duckdb`
+   (`source_alias` unresolved S5/S6), and `data/stage2.duckdb` (typed mirror of the
+   same extraction).
 4. Prior art + rules: `prompts/templates/research_brief.md`
    (evidence rules, deliverable shape).
 

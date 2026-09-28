@@ -1,6 +1,6 @@
 """CLI: export production DuckDBs into timestamped CSV + Parquet bundles.
 
-Defaults: data/citations.duckdb + data/stage2.duckdb -> data/exports/export_<ts>/.
+Defaults: data/citations.duckdb + data/stage2.duckdb + data/smarthome.duckdb -> data/exports/export_<ts>/.
 Sources are opened read-only and left unchanged; bundles carry EXPORT DATABASE
 output plus read-only view snapshots, README, and manifest.
 """
@@ -22,7 +22,7 @@ from src.db_export_core import export_all  # noqa: E402
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export production DuckDBs (CSV + Parquet).")
     parser.add_argument("--export-root", type=Path, default=PROJECT_ROOT / "data" / "exports")
-    parser.add_argument("--which", choices=("all", "citations", "stage2"), default="all")
+    parser.add_argument("--which", choices=("all", "citations", "stage2", "smarthome"), default="all")
     parser.add_argument("--formats", default="csv,parquet")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--no-verify", action="store_true")
