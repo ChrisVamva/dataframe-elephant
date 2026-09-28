@@ -457,7 +457,10 @@ def _copy_unchanged_rows(
         out["decisions"] = fetch_doc("extraction_decision")
         cur = con.execute(f"SELECT * FROM stage2_warning WHERE input_path IN ({ph})", paths)
         cols = [d[0] for d in cur.description]
-        warnings.extend(dict(zip(cols, r)) for r in cur.fetchall())
+        for row in cur.fetchall():
+            carried = dict(zip(cols, row))
+            warnings.append(_warn(run_id, carried["input_path"], carried["warning_type"],
+                                 carried["message"], carried.get("raw_value", "") or ""))
         return out
     except Exception:
         return {"documents": [], "entities": [], "metrics": [], "claims": [],

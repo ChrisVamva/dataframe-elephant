@@ -175,3 +175,53 @@ def test_cli_archive_and_restore_roundtrip(tmp_path):
     # Check restored files
     assert (restore_dir / "test1.md").read_text(encoding="utf-8") == "# Test 1\nSome research notes."
     assert (restore_dir / "test2.md").read_text(encoding="utf-8") == "# Test 2\nMore notes."
+
+def test_commander_deck_prefix_and_manifest_exclusion(tmp_path):
+    """Commander Deck profile: custom prefix + manifests/containers never re-archived."""
+    from scripts.archive_stage1 import run_archive
+    from scripts.restore_archive import restore_archive, list_archive
+
+    source_dir = tmp_path / "Rules and Regulations" / "Commander Deck" / "Archive"
+    source_dir.mkdir(parents=True)
+    (source_dir / "Plan 2.md").write_text("# Plan 2\n", encoding="utf-8")
+    (source_dir / "state change 001.md").write_text("# change\n", encoding="utf-8")
+    # Pre-existing audit artifacts must be skipped, never re-archived.
+    (source_dir / "old_manifest.json").write_text("{}", encoding="utf-8")
+    (source_dir / "commander_deck_archive_20000101_000000_manifest.json").write_text("{}", encoding="utf-8")
+
+    passphrase = "CommanderDeckTestPassphrase123!"
+
+    # Dry run creates nothing.
+    assert run_archive(source_dir, source_dir, passphrase, prefix="commander_deck_archive", dry_run=True) == 0
+    assert len(list(source_dir.glob("*.tar.gz.enc"))) == 0
+
+    # Real archive with keep-originals for inspection.
+    assert (
+        run_archive(source_dir, source_dir, passphrase, prefix="commander_deck_archive", keep_originals=True)
+        == 0
+    )
+    archives = sorted(source_dir.glob("commander_deck_archive_*.tar.gz.enc"))
+    assert len(archives) == 1
+    assert archives[0].name.startswith("commander_deck_archive_")
+    assert (source_dir / "Plan 2.md").exists()  # keep-originals
+
+    # Interrogate without extracting; then restore and compare bytes.
+    assert list_archive(archives[0].read_bytes(), passphrase) == 0
+    restore_dir = tmp_path / "restored"
+    assert restore_archive(archives[0].read_bytes(), passphrase, restore_dir) == 0
+    assert (restore_dir / "Plan 2.md").read_text(encoding="utf-8") == "# Plan 2\n"
+
+    # Second archive run must skip manifests/containers: still 2 content files.
+    assert (
+        run_archive(source_dir, source_dir, passphrase, prefix="commander_deck_archive", keep_originals=True)
+        == 0
+    )
+    manifests = list(source_dir.glob("commander_deck_archive_*_manifest.json"))
+    assert manifests, "expected at least one manifest"
+    latest = max(manifests, key=lambda p: p.stat().st_mtime)
+    import json as _json
+
+    data = _json.loads(latest.read_text(encoding="utf-8"))
+    assert data["file_count"] == 2
+    assert data["verification_status"] == "VERIFIED_OK"
+

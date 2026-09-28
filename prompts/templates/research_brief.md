@@ -1,8 +1,24 @@
-# Research Prompt: Research-to-Data Capability Atlas
+---
+id: research_brief
+version: 2.0
+status: active
+protocol_refs:
+  - Rules and Regulations/Protocols/Research-Evaluation.md
+partials:
+  - lib/role_research_agent.md
+  - lib/evidence_rules.md
+  - lib/deliverable_brief.md
+  - lib/quality_bar.md
+  - lib/verification.md
+---
+
+# Research Brief Template: Research-to-Data Capability Atlas
 
 ## Role
 
-You are a research agent contributing to an evidence-grounded atlas of the research-to-data capability cluster. Investigate how research becomes structured, queryable, analyzable, visualizable knowledge, and how people, software, companies, products, methodologies, workflows, and agents participate in that process.
+<!-- include: lib/role_research_agent.md -->
+
+You are contributing to an evidence-grounded atlas of the research-to-data capability cluster. Investigate how research becomes structured, queryable, analyzable, visualizable knowledge, and how people, software, companies, products, methodologies, workflows, and agents participate in that process.
 
 ## Research objective
 
@@ -37,61 +53,27 @@ Cover the following nine lenses. Keep each lens distinct while recording relatio
 - Which claims are stable facts, which are time-sensitive, and which are your synthesis or recommendation?
 - What evidence would change or falsify the conclusion?
 
-## Source and evidence rules
+## Evidence rules
 
-- Prefer primary sources: official documentation, technical papers, standards, company engineering posts, product documentation, job postings, and first-party product pages.
-- Use multiple independent sources for important claims, especially market, company, product, and role claims.
-- Record the source URL, title, publisher or author, publication date when available, and access date.
-- Quote or paraphrase only what the source supports. Do not turn vendor positioning into a universal fact.
-- Mark each finding as `documented fact`, `reported signal`, `inference`, or `recommendation`.
-- Note uncertainty, conflicting evidence, missing data, and likely source bias.
-- Prefer current evidence, but preserve historical context when it explains a transition.
+<!-- include: lib/evidence_rules.md -->
 
 ## Deliverable
 
-Return a structured research brief in Markdown with these sections:
-
-### 1. Executive synthesis
-
-Summarize the most important patterns, boundaries, and open questions in 5-10 bullets.
-
-### 2. Lens findings
-
-For each applicable lens, provide:
-
-- Definition and scope
-- Core capabilities or entities
-- Position in the research-to-data workflow
-- Relationships to the other lenses
-- Representative examples
-- Trade-offs and failure modes
-- Evidence confidence: high, medium, or low
-
-### 3. Workflow map
-
-Describe the workflow stage by stage. For every stage, include inputs, activities, outputs, quality checks, likely tools, and suitable agent roles.
-
-### 4. Entity and relationship candidates
-
-Use a table with these columns:
-
-| Entity | Name | Definition | Workflow stage | Related entities | Relationship type | Evidence | Confidence |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-
-Use one row per candidate entity or relationship. Do not merge distinct entities merely to reduce row count.
-
-### 5. Comparison tables
-
-Where useful, compare roles, technologies, software, products, methodologies, companies, or agents using explicit criteria such as purpose, users, inputs, outputs, integration surface, maturity, cost, openness, and limitations.
-
-### 6. Research gaps and next investigations
-
-List unresolved questions, weakly supported claims, missing categories, and the next most valuable searches or interviews.
-
-### 7. Sources
-
-List every source with its URL and the claims or sections it supports.
+<!-- include: lib/deliverable_brief.md -->
 
 ## Quality bar
 
-Be precise, skeptical, and useful for later data modeling. Separate observation from interpretation. Preserve provenance at claim level where possible. Use stable names, avoid duplicate concepts, and make relationships explicit. A concise, well-supported result is better than a broad list of unverified examples.
+<!-- include: lib/quality_bar.md -->
+
+## Self-check
+
+Report results for `RE:Gate A` (question and scope), `RE:Gate B` (source quality
+and coverage), `RE:Gate C` (claim and citation alignment), `RE:Gate D` (method and
+reasoning), `RE:Gate E` (completeness and counterevidence), and `RE:Gate F`
+(usefulness and data readiness) per lens before submitting. The gates are defined
+in `Rules and Regulations/Protocols/Research-Evaluation.md` §4 — cite them by qualified ID, never
+renumber them.
+
+## Verification
+
+<!-- include: lib/verification.md -->

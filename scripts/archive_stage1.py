@@ -1,4 +1,9 @@
-"""CLI tool for Encryption-Compression-Archiving Stage 1 research files."""
+"""CLI tool for Encryption-Compression-Archiving (ECA).
+
+General archiver for Stage 1 research files and Commander Deck governance
+history. Select source/dest/prefix via CLI flags; crypto is identical
+(tar.gz level 9 + AES-256-GCM + PBKDF2-HMAC-SHA256 600k + ECA1 container).
+"""
 
 from __future__ import annotations
 
@@ -63,6 +68,7 @@ def run_archive(
     source_dir: Path,
     dest_dir: Path,
     passphrase: str,
+    prefix: str = "wave_1_archive",
     dry_run: bool = False,
     keep_originals: bool = False,
 ) -> int:
@@ -73,8 +79,16 @@ def run_archive(
 
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    # Collect target files
-    files_to_archive = sorted([p for p in source_dir.rglob("*.md") if p.is_file()])
+    # Collect target files (never re-archive manifests or containers).
+    files_to_archive = sorted(
+        [
+            p
+            for p in source_dir.rglob("*.md")
+            if p.is_file()
+            and not p.name.endswith("_manifest.json")
+            and ".tar.gz.enc" not in p.name
+        ]
+    )
     if not files_to_archive:
         print(f"No .md files found in {source_dir} to archive.")
         return 0
@@ -104,7 +118,7 @@ def run_archive(
     print(f"\nTotal uncompressed size: {total_uncompressed:,} bytes (~{total_uncompressed/1024:.1f} KB)")
 
     timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    archive_base_name = f"wave_1_archive_{timestamp_str}"
+    archive_base_name = f"{prefix}_{timestamp_str}"
     archive_file = dest_dir / f"{archive_base_name}.tar.gz.enc"
     manifest_file = dest_dir / f"{archive_base_name}_manifest.json"
 
@@ -170,7 +184,7 @@ def run_archive(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Encrypt, compress, and archive Stage 1 research files.")
+    parser = argparse.ArgumentParser(description="Encrypt, compress, and archive markdown files (ECA).")
     parser.add_argument(
         "--source",
         type=Path,
@@ -182,6 +196,12 @@ def main() -> None:
         type=Path,
         default=PROJECT_ROOT / "research" / "raw" / "Stage 1" / "Archive",
         help="Destination directory for archives (default: research/raw/Stage 1/Archive)",
+    )
+    parser.add_argument(
+        "--prefix",
+        type=str,
+        default="wave_1_archive",
+        help="Archive filename prefix (default: wave_1_archive; use commander_deck_archive for Commander Deck)",
     )
     parser.add_argument(
         "--dry-run",
@@ -217,6 +237,7 @@ def main() -> None:
             source_dir=args.source,
             dest_dir=args.dest,
             passphrase=passphrase,
+            prefix=args.prefix,
             dry_run=args.dry_run,
             keep_originals=args.keep_originals,
         )

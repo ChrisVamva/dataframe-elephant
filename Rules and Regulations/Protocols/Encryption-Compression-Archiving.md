@@ -2,7 +2,7 @@
 
 ## Status
 
-This protocol is mandatory for every person, agent, or automation script that archives research data within `research/raw/`. No raw research files may be removed, compressed, or archived without strictly following this procedure.
+This protocol is mandatory for every person, agent, or automation script that archives research data within `research/raw/` or governance history within `Rules and Regulations/Commander Deck/Archive`. No raw research files or Commander Deck archive files may be removed, compressed, or archived without strictly following this procedure.
 
 ---
 
@@ -12,6 +12,7 @@ Research raw materials in `research/raw/Stage 1/` (specifically briefs in `Wave 
 
 To maintain repository cleanliness, minimize storage footprint, and protect raw intellectual artifacts at rest:
 - Research brief files from `Stage 1/Wave 1/` are archived into `Stage 1/Archive/`.
+- Governance history files from `Rules and Regulations/Commander Deck/Archive/` are archived in place with the `commander_deck_archive_<timestamp>` prefix (see §4.10 Commander Deck profile).
 - All archived bundles must be compressed to reduce storage overhead.
 - All archives must be encrypted with industry-standard authenticated encryption to guarantee privacy and tamper-proofing.
 - The original raw files may **only** be moved/removed after an automated roundtrip integrity verification successfully decodes and matches 100% of SHA-256 hashes against the originals.
@@ -22,7 +23,7 @@ To maintain repository cleanliness, minimize storage footprint, and protect raw 
 ## 2. Non-Negotiable Rules
 
 1. **Lossless Preservation:** Compression must be byte-for-byte lossless. Tables, unicode symbols, citation links, and white spaces must be restored identically upon unpacking.
-2. **Zero-Trust Deletion:** Original files must **never** be deleted or moved based on an exit code alone. An in-memory decryption, decompression, and SHA-256 checksum comparison against every original source file must pass before any file is removed from `Wave 1/`.
+2. **Zero-Trust Deletion:** Original files must **never** be deleted or moved based on an exit code alone. An in-memory decryption, decompression, and SHA-256 checksum comparison against every original source file must pass before any file is removed from `Wave 1/` or `Commander Deck/Archive/`.
 3. **Authenticated Cryptography:** Encryption must use an authenticated cipher (AES-256-GCM). Unauthenticated ciphers (e.g. standard CBC without HMAC, or legacy ZipCrypto) are strictly forbidden.
 4. **Strong Key Derivation:** Keys must be derived using PBKDF2-HMAC-SHA256 with at least 600,000 iterations and a cryptographically secure, randomly generated 16-byte salt per archive. Hardcoded keys or static salts are forbidden.
 5. **Reproducible Manifest:** Every archive operation must produce an accompanying unencrypted JSON manifest (`<archive_name>_manifest.json`) in the destination directory detailing file names, relative paths, byte sizes, and pre-compression SHA-256 hashes.
@@ -122,6 +123,21 @@ flowchart TD
 - Safely remove the verified original files from `research/raw/Stage 1/Wave 1`.
 - Leave `Wave 1/` present as a clean, ready directory.
 
+### Step 10: Commander Deck profile (archive in place, interrogate later)
+- Source and destination are both `Rules and Regulations/Commander Deck/Archive/`.
+- Filename prefix is `commander_deck_archive` (not `wave_1_archive`):
+  `commander_deck_archive_<timestamp>.tar.gz.enc` + `_manifest.json`.
+- Same cipher, KDF, manifest schema, and zero-trust verify-before-delete.
+- The archiver never re-archives `*.tar.gz.enc` or `*_manifest.json`.
+- Verified 2026-09-28: 4 files, 30,779 → 11,558 bytes (2.66x), `VERIFIED_OK`.
+- Commands (dry-run first, per `AGENTS.md` gotchas):
+  ```powershell
+  .\.venv\Scripts\python.exe scripts/archive_stage1.py --source "Rules and Regulations/Commander Deck/Archive" --dest "Rules and Regulations/Commander Deck/Archive" --prefix commander_deck_archive --dry-run
+  .\.venv\Scripts\python.exe scripts/archive_stage1.py --source "Rules and Regulations/Commander Deck/Archive" --dest "Rules and Regulations/Commander Deck/Archive" --prefix commander_deck_archive --keep-originals
+  ```
+- `.tar.gz.enc` files are gitignored derived artifacts; `*_manifest.json`
+  files are committed as the unencrypted audit trail.
+
 ---
 
 ## 5. Restoration Workflow
@@ -149,6 +165,19 @@ The restore script:
 4. Decompresses the tarball.
 5. Recomputes SHA-256 hashes and compares against the manifest embedded in the archive.
 6. Writes files to the target destination.
+
+### 5.3 Interrogation without restore (compressed data stays out of the process)
+- `--list` decrypts and decompresses in memory and prints
+  name/size/SHA-256 without writing to disk — the archive is interrogable
+  while staying compressed and out of every ingestion pipeline.
+- The committed `*_manifest.json` gives file names, sizes, and SHA-256
+  without needing the passphrase.
+- `*.tar.gz.enc` never matches ingestion `rglob("*.md")`, so neither
+  `src/ingest_citations.py` nor `src/stage2_import_core.py` picks archives
+  up as documents: archives are compressed and excluded, but restorable.
+  ```powershell
+  .\.venv\Scripts\python.exe scripts/restore_archive.py --archive "Rules and Regulations/Commander Deck/Archive/commander_deck_archive_<timestamp>.tar.gz.enc" --list
+  ```
 
 ---
 

@@ -1,25 +1,52 @@
-# Follow-Up Research Prompt: Wave 2 Gap Closure
+---
+id: followup_dispatch
+version: 2.0
+status: active
+protocol_refs:
+  - Rules and Regulations/Protocols/FollowUpResearch.md
+  - Rules and Regulations/Protocols/Research-Evaluation.md
+inputs:
+  - research/processed/FollowUps/ResearchAgenda.md
+  - research/processed/FollowUps/Wave2_Entity_Boundaries.md
+  - research/processed/FollowUps/Wave2_Architectural_Open_Questions.md
+  - research/processed/FollowUps/Wave2_Primary_Evidence_Gaps.md
+  - research/processed/FollowUps/Wave2_Benchmark_Conditions.md
+  - research/raw/Stage 2/Entities.md
+  - research/raw/Stage 2/Sources.md
+  - research/raw/Stage 2/ExtractionLog.md
+partials:
+  - lib/role_research_agent.md
+  - lib/evidence_rules.md
+  - lib/deliverable_dossier.md
+  - lib/quality_bar.md
+  - lib/verification.md
+---
+
+# Follow-Up Research Template: Wave 2 Gap Closure
 
 ## Role
+
+<!-- include: lib/role_research_agent.md -->
 
 You are a follow-up research agent. Your job is to close the prioritized gaps
 in `research/processed/FollowUps/ResearchAgenda.md` (31 questions: 15 P1, 16 P2,
 0 P3) so their answers can be written back into Stage 2 and the citation
-database. Governed by `Protocols/FollowUpResearch.md` and evaluated under
-`Protocols/Research-Evaluation.md` (Gate A scope, Gate E falsification).
+database. Governed by `Rules and Regulations/Protocols/FollowUpResearch.md` and evaluated under
+`Rules and Regulations/Protocols/Research-Evaluation.md` (qualified IDs: `FU:Gate A` scope,
+`FU:Gate B` falsification).
 
 ## Inputs (read before answering anything)
 
 1. `research/processed/FollowUps/ResearchAgenda.md` — master ranking + full
    dossiers (question, scope, target evidence, falsifier per RQ).
-2. Thematic packs: `Wave2_Entity_Boundaries.md` (22),
-   `Wave2_Architectural_Open_Questions.md` (8),
-   `Wave2_Primary_Evidence_Gaps.md` (1),
-   `Wave2_Benchmark_Conditions.md` (0 — nothing to do).
-3. Triggers: `research/raw/Stage 2/Entities.md`, `Sources.md`,
-   `ExtractionLog.md` (L001–L007, L004), and `data/citations.duckdb`
+2. Thematic packs: `research/processed/FollowUps/Wave2_Entity_Boundaries.md` (22),
+   `research/processed/FollowUps/Wave2_Architectural_Open_Questions.md` (8),
+   `research/processed/FollowUps/Wave2_Primary_Evidence_Gaps.md` (1),
+   `research/processed/FollowUps/Wave2_Benchmark_Conditions.md` (0 — nothing to do).
+3. Triggers: `research/raw/Stage 2/Entities.md`, `research/raw/Stage 2/Sources.md`,
+   `research/raw/Stage 2/ExtractionLog.md` (L001–L007, L004), and `data/citations.duckdb`
    (`source_alias` unresolved S5/S6).
-4. Prior art + rules: `Commander Deck/Active/prompts/Research Prompt.md`
+4. Prior art + rules: `prompts/templates/research_brief.md`
    (evidence rules, deliverable shape).
 
 ## Wave 1 — P1 dispatch (do these first, in order)
@@ -82,31 +109,19 @@ governance/specification (unlikely — but check before splitting).
 
 ## Evidence rules (non-negotiable)
 
-- Primary sources first; independent corroboration for material claims.
-- Every material claim: one row with claim text, type (`documented fact` /
-  `reported signal` / `inference` / `recommendation`), confidence + reason,
-  supporting evidence, contradicting evidence, and falsifier.
-- Record URL, title, publisher/author, publication date, access date.
-- Never promote evidence class; never merge same-labeled distinct concepts;
-  never present vendor claims as established facts.
-- Date-sensitive claims carry `as of [date]` qualifiers.
+<!-- include: lib/evidence_rules.md -->
 
 ## Deliverable per dossier
 
-Return Markdown following the dossier spec in `Protocols/FollowUpResearch.md`
-§5 (core question, In/Out of scope, intended use, minimum evidence class,
-target sources, resolution + falsifier), plus:
-
-- Verdict per trigger: `resolved` (with answer + citations) or
-  `still open` (with what was tried and what would unblock it).
-- Exact write-back patch: the `Entities.md` boundary sentence, the atomic
-  `Sources.md` rows, or the alias → `source_id` mapping.
-- Gate self-check: A (scope) / B (falsifier) / C (provenance) / D (scores).
+<!-- include: lib/deliverable_dossier.md -->
 
 ## Quality bar
 
-A dossier is done when a later modeler can apply its write-back without
-re-reading the sources, sees what is claimed, why, how well supported, what
-remains uncertain, and what would change the result. Start with Track A
-RQ-001/RQ-016, then Track B, then Track C; report Track A before starting
-Wave 2.
+<!-- include: lib/quality_bar.md -->
+
+Start with Track A RQ-001/RQ-016, then Track B, then Track C; report Track A
+before starting Wave 2.
+
+## Verification
+
+<!-- include: lib/verification.md -->

@@ -121,7 +121,8 @@ def main() -> None:
         "--dest",
         type=Path,
         default=PROJECT_ROOT / "research" / "raw" / "Stage 1" / "Wave 1",
-        help="Destination directory to restore files to (default: research/raw/Stage 1/Wave 1)",
+        help="Destination directory to restore files to (default: research/raw/Stage 1/Wave 1; "
+        "for Commander Deck archives pass --dest 'Rules and Regulations/Commander Deck/Archive_restored')",
     )
     parser.add_argument(
         "--list",

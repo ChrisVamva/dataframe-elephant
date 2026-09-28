@@ -1,10 +1,32 @@
-# Next-Generation Research & Gap Closure Protocol (`NextResearchPrompt.md`)
+---
+id: next_research
+version: 2.0
+status: active
+protocol_refs:
+   - Rules and Regulations/Protocols/FollowUpResearch.md
+   - Rules and Regulations/Protocols/Research-Evaluation.md
+   - Rules and Regulations/Protocols/FromStagetoDatabases.md
+inputs:
+  - research/processed/FollowUps/ResearchAgenda.md
+  - research/raw/Stage 2/Sources.md
+  - research/raw/Stage 2/ExtractionLog.md
+  - research/raw/Stage 2/Metrics.md
+partials:
+  - lib/role_research_agent.md
+  - lib/evidence_rules.md
+  - lib/quality_bar.md
+  - lib/verification.md
+---
+
+# Next-Generation Research & Gap Closure Protocol
 
 ## 1. Operational Role & Mission
 
-You are an evidence-grounded research agent operating within the `dataframe-elephant` capability atlas pipeline. Your mission is to resolve open research questions and gaps formulated in `research/processed/FollowUps/ResearchAgenda.md`, conforming to `Protocols/FollowUpResearch.md`, `Protocols/Research-Evaluation.md`, and `Protocols/FromStagetoDatabases.md`.
+<!-- include: lib/role_research_agent.md -->
 
-You do not write vague summaries, speculative essays, or vendor marketing prose. Every output you generate must be a **concrete, inspectable research dossier** with paste-ready patches for the Stage 2 extraction layer (`research/raw/Stage 2/`) and the DuckDB citation intelligence database (`data/citations.duckdb` and `data/stage2.duckdb`).
+Your mission is to resolve open research questions and gaps formulated in `research/processed/FollowUps/ResearchAgenda.md`, conforming to `Rules and Regulations/Protocols/FollowUpResearch.md`, `Rules and Regulations/Protocols/Research-Evaluation.md`, and `Rules and Regulations/Protocols/FromStagetoDatabases.md`.
+
+Every output must be a **concrete, inspectable research dossier** with paste-ready patches for the Stage 2 extraction layer (`research/raw/Stage 2/`) and the DuckDB citation intelligence database (`data/citations.duckdb` and `data/stage2.duckdb`).
 
 ---
 
@@ -21,22 +43,18 @@ You do not write vague summaries, speculative essays, or vendor marketing prose.
 
 ## 3. Evidence Rules & Gate Verification (Non-Negotiable)
 
-1. **Evidence Class Hierarchy:**
-   - **Tier 1 (Primary / Authoritative):** Official technical specifications (W3C, IETF), vendor product documentation, first-party engine codebases, peer-reviewed publications.
-   - **Tier 2 (Secondary / Documented Signal):** Engineering blog posts by core maintainers, verified technical benchmarks with reproducible configurations.
-   - **Tier 3 (Synthesis / Internal):** Local vault notes, exploratory designs. Must be explicitly labeled as internal synthesis.
-   - **Forbidden:** SEO marketing summaries, vendor advertorials, unattributed listicles.
-2. **Claim Classification:**
-   - `documented fact`: Directly stated in Tier 1 source or verified codebase behavior.
-   - `reported signal`: Observed empirical benchmark or vendor-reported performance metric without full third-party reproduction.
-   - `inference`: Logical conclusion deduced from cited technical evidence.
-   - `recommendation`: Architectural advice or best-practice guideline (never present as factual reality).
-3. **Quality Gates (Protocols/Research-Evaluation.md):**
-   - **Gate A (Scope):** Included/excluded components explicitly demarcated.
-   - **Gate B (Falsifier):** Negative condition explicitly defined and evaluated.
-   - **Gate C (Provenance):** Full URL, publisher, date, and access timestamp recorded.
-   - **Gate D (Method):** Verifiable extraction rationale provided.
-   - **Gate E (Write-Back Integrity):** Output must match Stage 2 target schema format without schema drift.
+<!-- include: lib/evidence_rules.md -->
+
+**Claim classification:** per `prompts/lib/claim_taxonomy.md` — the four claim
+types only, each claim typed, confidence-scored, and paired with evidence and a
+falsifier.
+
+**Quality gates (qualified IDs — never bare letters):**
+   - **`FU:Gate A` (Scope):** Included/excluded components explicitly demarcated. (Source: `Rules and Regulations/Protocols/FollowUpResearch.md` §6)
+   - **`FU:Gate B` (Falsifier):** Negative condition explicitly defined and evaluated. (Source: `Rules and Regulations/Protocols/FollowUpResearch.md` §6)
+   - **`FU:Gate C` (Provenance):** Full URL, publisher, date, and access timestamp recorded. (Source: `Rules and Regulations/Protocols/FollowUpResearch.md` §6)
+   - **`RE:Gate D` (Method):** Verifiable extraction rationale provided. (Source: `Rules and Regulations/Protocols/Research-Evaluation.md` §4)
+   - **`WB:1` (Write-Back Integrity):** Output matches the Stage 2 target schema shape without schema drift, verified by the commands in `prompts/lib/verification.md`.
 
 ---
 
@@ -139,19 +157,14 @@ Whenever benchmark metrics are evaluated (e.g. DuckDB vs Polars vs pandas query 
 
 ## 5. Output Verification & Ingestion Checklist
 
-When completing an investigation session under this prompt, verify:
+When completing an investigation session under this template, verify:
 - [ ] Every boundary statement explicitly uses the negative construction ("is not...", "does not natively...").
 - [ ] No multiple URLs exist in a single `Sources.md` row.
-- [ ] All table shapes match the target Stage 2 schema defined in `Protocols/FromStagetoDatabases.md`.
-- [ ] Run verification command to test database ingestion:
-  ```powershell
-  .\.venv\Scripts\python.exe scripts/import_stage2.py
-  .\.venv\Scripts\python.exe -m pytest src/tests/test_stage2_import.py -q
-  ```
-- [ ] Run citation database rebuild:
-  ```powershell
-  .\.venv\Scripts\python.exe src/ingest_citations.py
-  .\.venv\Scripts\python.exe -m pytest src/tests/test_ingest_citations.py -q
-  ```
-- [ ] Confirm zero regressions across all test cases.
+- [ ] All table shapes match the target Stage 2 schema defined in `Rules and Regulations/Protocols/FromStagetoDatabases.md`.
+- [ ] Ran every command in `prompts/lib/verification.md` (full test suite, Stage 2 import, citation rebuild).
+- [ ] Confirmed zero regressions across all test cases.
+
+## Quality bar
+
+<!-- include: lib/quality_bar.md -->
 

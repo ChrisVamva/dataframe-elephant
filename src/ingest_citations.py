@@ -882,12 +882,23 @@ def _copy_unchanged_rows(
             path_list,
         )
 
-        # 7. ingestion_warning — append directly to warnings (Requirement 9.9)
+        # 7. ingestion_warning — re-stamp carried-forward rows to the new run_id
+        # (warning_id is content-derived from the OLD run_id, so regenerate both
+        # to satisfy the ingestion_warning.run_id -> ingestion_run FK).
         warning_rows = _fetch(
             f"SELECT * FROM ingestion_warning WHERE input_path IN ({placeholders})",
             path_list,
         )
-        warnings.extend(warning_rows)
+        for carried in warning_rows:
+            warnings.append(
+                _make_warning(
+                    run_id,
+                    carried["input_path"],
+                    carried["warning_type"],
+                    carried["message"],
+                    carried.get("raw_value", "") or "",
+                )
+            )
 
         return document_rows, occurrence_rows, alias_rows, claim_rows, claim_source_rows
 

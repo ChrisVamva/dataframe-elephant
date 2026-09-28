@@ -1,0 +1,26 @@
+Export Plan
+Recommendation: export both production databases, citations.duckdb and stage2.duckdb, into timestamped, gitignored bundles under data/exports/. Provide DuckDB’s restorable database export in CSV and Parquet formats, plus readable snapshots of view results. Keep the source databases unchanged.
+
+DuckDB’s EXPORT DATABASE produces schema and load SQL plus table files, and can re-import into a fresh database. COPY supports exporting tables or query results as CSV, Parquet, and JSON. CSV is convenient to open; Parquet preserves typed analytical data more effectively. Excel is excluded from the initial scope because it requires an extension and converts some types.
+
+Scope confirmed: the two production databases currently documented in README.md. Exports of test or scratch databases are out of scope unless they are later identified as production databases.
+
+Steps
+
+Inventory and baseline: record each database’s tables, views, schema, row counts, ingestion run identifier, and companion warning JSONL file. Identify any sensitive fields and set the export destination and overwrite policy.
+Implement export tooling: add a core exporter and CLI that open the source databases without changing them and create a unique run directory under data/exports/. Use DuckDB’s native database export for CSV and Parquet bundles.
+Export view results: include each current view’s definition in the restorable bundle and export its query results separately for reading, clearly labeling these as snapshots rather than source tables.
+Package context: add a README and manifest recording source database, export time, DuckDB version, formats, schema/table/view inventory, row counts, file checksums, and restore instructions. Preserve the existing warning JSONL files as companion outputs.
+Verify restoration and fidelity: import each bundle into a fresh temporary database; compare schema objects and table row counts; compare view results; test NULL versus empty strings, dates/timestamps, Unicode, and foreign-key relationships. Confirm the original database files remain unchanged.
+Document and validate: update README.md, AGENTS.md, and .gitignore; add focused exporter tests, then run the full test suite. Ensure exports cannot be committed accidentally.
+Relevant files
+
+citations.sql and stage2.sql: canonical table and view definitions.
+ingest_citations.py and stage2_import_core.py: current database build behavior and run metadata.
+Proposed: src/db_export_core.py, scripts/export_databases.py, and src/tests/test_export_databases.py.
+Update: README.md, AGENTS.md, and .gitignore.
+Decisions
+
+The original .duckdb files remain the source of truth; exports are derived artifacts.
+CSV plus Parquet are the initial formats. JSON and Excel can be considered separately.
+Do not use ECA encryption automatically for these exports. If you later want encrypted export archives, follow Encryption-Compression-Archiving.md and its verification requirements.

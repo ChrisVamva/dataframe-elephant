@@ -6,4 +6,12 @@
 __pycache__/
 *.pyc
 scratch/
+prompts/dispatch/*.md
+!prompts/dispatch/README.md
+# ECA encrypted containers are derived artifacts (never commit);
+# manifests (*_manifest.json) are the unencrypted audit trail (do commit).
+*.tar.gz.enc
+# Database export bundles are derived artifacts (never commit);
+# each run dir carries its own manifest.json + README.md audit trail.
+data/exports/
 

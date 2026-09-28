@@ -19,8 +19,11 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 - Import Stage 2 (defaults: `research/raw/Stage 2` → `data/stage2.duckdb` + `data/stage2_ingestion_warnings.jsonl` via `schemas/stage2.sql`, per `Protocols/FromStagetoDatabases.md`):
   `.\.venv\Scripts\python.exe scripts/import_stage2.py [--stage2-dir PATH --database PATH --warnings PATH --schema PATH]`
 - Archive dry-run first (safe): `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run`
+- Archive Commander Deck (dry-run first): `.\\.venv\\Scripts\\python.exe scripts/archive_stage1.py --source "Rules and Regulations/Commander Deck/Archive" --dest "Rules and Regulations/Commander Deck/Archive" --prefix commander_deck_archive --dry-run` (then `--keep-originals`, then verified delete)
 - Follow-ups: `.\.venv\Scripts\python.exe scripts/formulate_research_questions.py [--stage2-dir PATH --database PATH --output-dir PATH]`
+- Assemble a prompt (inlines `lib/` partials; `--out` defaults to stdout): `.\.venv\Scripts\python.exe scripts/assemble_prompt.py [--template NAME] [--var NAME=VALUE ...] [--context FILE] [--out PATH]`
 - Restore/inspect: `.\.venv\Scripts\python.exe scripts/restore_archive.py --archive <file.tar.gz.enc> --list` (add `--dest DIR [--overwrite]` to extract)
+- Export databases (CSV + Parquet, gitignored; per `Rules and Regulations/Protocols/ExportDatabase.md`): `.\.venv\Scripts\python.exe scripts/export_databases.py [--which all|citations|stage2] [--formats csv,parquet] [--overwrite] [--no-verify]`
 
 ## Gotchas that will bite
 
@@ -33,3 +36,5 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 - `build_database` also ingests `analysis/**/*.md` when `raw_dir` is under repo root (see `ROOT`-relative `candidate_roots`); tests monkeypatch `ingest_citations.ROOT` to isolate this.
 - `schemas/*.sql` and `analysis/*.sql` are **DuckDB dialect** (`CREATE OR REPLACE VIEW`, `FILTER (WHERE ...)`, `ADD COLUMN IF NOT EXISTS`) — don't "fix" to T-SQL. `.vscode/settings.json` already disables the mssql T-SQL checker for these paths.
 - Derived artifacts `*.duckdb`, `*.jsonl`, `.env` are gitignored; don't commit `data/citations.duckdb` or passphrases.
+- `data/exports/` bundles are derived artifacts (gitignored); each run dir carries its own `manifest.json` + `README.md`. The `*.duckdb` files remain the source of truth; exports get no ECA encryption by default.
+- CSV export fidelity caveat: empty strings collapse to NULL in nullable columns (DuckDB CSV semantics); Parquet is exact. `verify_bundle` normalizes for this; don't "fix" by hand-editing CSVs.

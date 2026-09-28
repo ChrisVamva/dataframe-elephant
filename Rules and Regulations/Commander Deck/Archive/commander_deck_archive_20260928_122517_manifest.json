@@ -1,0 +1,35 @@
+{
+  "format": "ECA-v1",
+  "created_utc": "2026-09-28T12:25:17Z",
+  "archive_file": "commander_deck_archive_20260928_122517.tar.gz.enc",
+  "source_directory": "C:\\Users\\user\\dataframe-elephant\\Rules and Regulations\\Commander Deck\\Archive",
+  "file_count": 4,
+  "total_uncompressed_bytes": 30779,
+  "total_compressed_bytes": 11558,
+  "compression_ratio": 2.66,
+  "verification_status": "VERIFIED_OK",
+  "cipher": "AES-256-GCM",
+  "kdf": "PBKDF2-HMAC-SHA256 (600000 iterations)",
+  "files": [
+    {
+      "path": "Plan 2.md",
+      "size_bytes": 631,
+      "sha256": "ec40d142b5103bc5e1b4808bec18d5e9deddcbc6b4606394caa071053b9705f0"
+    },
+    {
+      "path": "Plan First Citation Intelligence Database.md",
+      "size_bytes": 9772,
+      "sha256": "4f8fb1b6e4091fa7d3124cb3d302587190f469bc75f68591b68c956556b51120"
+    },
+    {
+      "path": "Solutions1.md",
+      "size_bytes": 19406,
+      "sha256": "b192e3d0d22ac3262fb0012832a8c7a692e95b2a5da729afb1d58786be60584b"
+    },
+    {
+      "path": "state change 001.md",
+      "size_bytes": 970,
+      "sha256": "23b9f5c43efe2bbfb155380d90b6df946936494f088dd563fa5bc6fd1f561a0a"
+    }
+  ]
+}
