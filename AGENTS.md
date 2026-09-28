@@ -16,6 +16,7 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
   - `src/stage2_import_core.py` - Stage 2 import (per extraction folder) to stage2.duckdb / smarthome.duckdb  
   - `src/archive_core.py` - Core ECA encryption/compression library
   - `src/db_export_core.py` - Native DuckDB export bundles
+  - `src/viz_core.py` - Read-only query/provenance helpers shared by the notebooks in `notebooks/`
 - **Scripts directory**: Thin CLIs that import core modules (mirroring `src/*_core.py` pattern)
 
 ## Essential Commands
@@ -24,20 +25,29 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 - **Citation DB**: `.\.venv\Scripts\python.exe src/ingest_citations.py`
 - **Stage 2 DB (Extraction 1)**: `.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 1" --database "data/stage2.duckdb" --warnings "data/stage2_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"`
 - **Smart-home DB (Extraction 2)**: `.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 2" --database "data/smarthome.duckdb" --warnings "data/smarthome_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"`
-- **Archive**: `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run` (ALWAYS start with dry-run!)
+- **Archive (Stage 1 Wave 1)**: `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run` (ALWAYS start with dry-run!)
+- **Restore archive**: `.\.venv\Scripts\python.exe scripts/restore_archive.py --archive <file>.tar.gz.enc --dest "research/raw/Stage 1/Wave 1"` (use `--list` to inspect without extracting; Commander Deck archives need `--dest "Rules and Regulations/Commander Deck/Archive_restored"`)
 
 ### Prompt Library
 - **Assemble a prompt**: `.\.venv\Scripts\python.exe scripts/assemble_prompt.py --template followup_dispatch --out prompts/dispatch/<date>_wave2.md`
 - **Follow-up agenda**: `.\.venv\Scripts\python.exe scripts/formulate_research_questions.py --stage2-dir "research/raw/Stage 2/Extraction 1" --output-dir "research/processed/FollowUps"`
 
+### Visualization Notebooks
+- **Rebuild notebooks**: `.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py` (the `.ipynb` files are generated; edit the generator, not the notebooks)
+- **Verify notebooks match the generator**: `.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py --check`
+- **Notebook focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_viz_notebooks.py -q` (executes every notebook headless in a real Jupyter kernel)
+- **Shared library focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_viz_core.py -q`
+
 ### Testing
 - **Full suite**: `.\.venv\Scripts\python.exe -m pytest src/tests -q`
 - **Export focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_export_databases.py -q`
-- **Export focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_archive_roundtrip.py -q`
+- **Archive focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_archive_roundtrip.py -q`
+- **Prompt lint**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_prompts.py -q` (Tier 1 rules R1–R5; R5 asserts prompt commands match AGENTS.md verbatim — keep commands in sync)
+- **No linter/typechecker**: there is no `ruff`/`mypy` config; the only automated checks are pytest + the prompt lint rules.
 
 ### Export Protocol
 - **Full export**: `.\.venv\Scripts\python.exe scripts/export_databases.py`
-- **Partial options**: `--which citations|stage2|smarthome` `--formats csv,parquet` `--overwrite` `--no-verify` (diagnostics only)
+- **Partial options**: `--which all|citations|stage2|smarthome` `--formats csv,parquet` `--overwrite` `--no-verify` `--timestamp <ts>` (diagnostics only)
 
 ## Gotchas That Will Bite
 
@@ -55,6 +65,8 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 - **Dialect only**: `schemas/*.sql` uses DuckDB syntax (`CREATE OR REPLACE VIEW`, `FILTER (WHERE ...)`, `ADD COLUMN IF NOT EXISTS`)
 - **Parsing rules**: No fuzzy matching by design: publisher-only URLs, multi-URL cells, truncated URLs, unmapped classifications produce `unresolved`/`ambiguous` rows + `ingestion_warning` entries
 - **Claim requirement**: Claim tables require `claim` + `claim type` + `confidence` columns or they are skipped with `unsupported_table_shape` warning
+- **No claim→metric FK**: `schemas/stage2.sql` links claims to metrics only by shared `section` or `source_ref`. `viz_core` derives those links heuristically and labels the reason in a `linkage` column; never present that linkage as a stored relationship
+- **Value cells are authored strings**: `metric.value` holds `"3-5"`, `"1.4, 1.4.2, 1.5, 1.6"`, `"760 (45%)"`. Use `viz.parse_numbers` / `viz.range_value`; never assume a typed number
 - **Internal evaluation**: `First-Ratings.md` excluded from external recurrence/claims; `source.status`/`directness` stay `NULL` when unrecorded
 
 ### Environment & Testing
@@ -85,8 +97,8 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 
 ### Command Order Matters
 1. **Validate first**: Always start archive operations with `--dry-run`
-2. **Export flow**: `lint -> typecheck -> test -> export` (order matters)
-3. **Testing**: Run focused tests before full suite (`test_export_databases.py`, `test_archive_roundtrip.py`)
+2. **Test flow**: `test_export_databases.py` + `test_archive_roundtrip.py` + `test_viz_notebooks.py` → full suite (`src/tests`) → export. There is no lint/typecheck step (no ruff/mypy config).
+3. **Testing**: Run focused tests before full suite (`test_export_databases.py`, `test_archive_roundtrip.py`, `test_viz_core.py`, `test_viz_notebooks.py`)
 
 ### Environment Setup
 - **Prefer repo venv**: `.\.venv\Scripts\python.exe` over system python
@@ -113,3 +125,5 @@ Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation 
 - Don't present view snapshots as source tables
 - Don't commit derived artifacts (`data/exports/`, `*.duckdb` files)
 - Don't use automatic ECA encryption for exports by default
+- Don't hand-edit `notebooks/*.ipynb`; they are generated by `scripts/build_visualization_notebooks.py`
+- Don't chart a number the corpus does not record (e.g. inventing Matter release dates, an ecosystem device-type parity matrix, or per-control security scorecard results) — the notebooks state what is missing instead
