@@ -1,129 +1,135 @@
-# AGENTS.md — dataframe-elephant
+# Repository Guidelines
 
 ## Project Overview
-Data-research workspace: Markdown corpus in `research/raw/` → DuckDB citation intelligence in `data/` → follow-up agenda in `research/processed/`, plus an encrypted-archive (ECA) pipeline. Core logic in `src/*_core.py`, thin CLIs in `scripts/`.
 
-## Critical Entry Points
+`dataframe-elephant` is a data-research platform that processes markdown corpora, extracts citations and claims, builds DuckDB databases, and generates visualizations and follow-up research agendas. The system follows a pipeline: **Markdown → Ingestion → Database (DuckDB) → Visualization/Export → Prompt Assembly → Follow-up Research**.
 
-### Interpreter (Windows)
-- **Use the repo venv**: `.\.venv\Scripts\python.exe` (system 3.13 lacks deps like duckdb)
-- **Install deps**: `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` (duckdb, pytest, hypothesis, cryptography)
-- **Test setup**: `.\.venv\Scripts\python.exe -m pytest src/tests -q`
+## Architecture & Data Flow
 
-### Monorepo Structure
-- **Entrypoint files**:
-  - `src/ingest_citations.py` - Stage 1 ingestion to citations.duckdb
-  - `src/stage2_import_core.py` - Stage 2 import (per extraction folder) to stage2.duckdb / smarthome.duckdb  
-  - `src/archive_core.py` - Core ECA encryption/compression library
-  - `src/db_export_core.py` - Native DuckDB export bundles
-  - `src/viz_core.py` - Read-only query/provenance helpers shared by the notebooks in `notebooks/`
-- **Scripts directory**: Thin CLIs that import core modules (mirroring `src/*_core.py` pattern)
+### Core Modules (`src/`)
+- **`viz_core.py`** – Shared visualization library for SmartHome analysis notebooks. Handles claim fetching, metric retrieval, entity lookup, and provenance rendering.
+- **`stage2_import_core.py`** – Stages 2 extraction (research/raw/Stage 2/Extraction 1/2) into DuckDB. Uses `SMARTHOME_DB` environment variable pointing to `data/smarthome.duckdb`.
+- **`ingest_citations.py`** – Parses Markdown tables in research documents to build citation databases (claims, sources, metrics).
+- **`db_export_core.py`** – Exports staged data to CSV/Parquet bundles with verification roundtrips.
+- **`archive_core.py`** – Encrypts and packages datasets as ECA (Encrypted Archive Containers) using AES-256-GCM + PBKDF2-HMAC-SHA256 (600k iterations).
+- **`followup_core.py`** – Generates research agendas and follow-up questions from gaps in the dataset.
+- **`prompt_core.py`** – Assembles prompt templates from tier-1 lint rules (R1–R5) and writes structured outputs to `research/processed/`.
 
-## Essential Commands
+### Scripts (`scripts/`)
+- **Thin CLI wrappers** over core modules. All use `argparse` with `--flag` defaults pointing to repo paths.
+- **`assemble_prompt.py`** – Resolves template placeholders (`{{...}}`) from `prompts/templates/`.
+- **`import_stage2.py`** – Imports Stage 2 Markdown files into DuckDB with frontmatter gating.
+- **`formulate_research_questions.py`** – Scans gaps in Stage 2 data and writes `research/processed/FollowUps/`.
+- **`export_databases.py`** – Bundles DBs to CSV/Parquet with optional verification.
+- **`archive_stage1.py`** – Creates ECA-encrypted archives from `research/raw/Stage 1/`.
+- **`restore_archive.py`** – Restores archived datasets.
+- **`build_visualization_notebooks.py`** – Generates the notebook catalogue in waves: the cell contract, the bootstrap cell and wave 1's specs live here, wave 2's specs are imported from `wave2_notebook_specs.py`.
+- **`wave2_notebook_specs.py`** – Spec dicts for `notebooks/2/`: claim clusters, metric ids and every code cell, importing the shared cell contract from the builder.
 
-### Database Operations
-- **Citation DB**: `.\.venv\Scripts\python.exe src/ingest_citations.py`
-- **Stage 2 DB (Extraction 1)**: `.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 1" --database "data/stage2.duckdb" --warnings "data/stage2_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"`
-- **Smart-home DB (Extraction 2)**: `.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 2" --database "data/smarthome.duckdb" --warnings "data/smarthome_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"`
-- **Archive (Stage 1 Wave 1)**: `.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run` (ALWAYS start with dry-run!)
-- **Restore archive**: `.\.venv\Scripts\python.exe scripts/restore_archive.py --archive <file>.tar.gz.enc --dest "research/raw/Stage 1/Wave 1"` (use `--list` to inspect without extracting; Commander Deck archives need `--dest "Rules and Regulations/Commander Deck/Archive_restored"`)
+### Configuration & Build
+- **Dependencies** – All in `requirements.txt` (12 pinned-range packages: duckdb, pandas, plotly, altair, ipywidgets, cryptography, pytest, hypothesis, jupyter, nbformat, nbconvert, ipykernel).
+- **Test runner** – `pytest.ini` sets `pythonpath = .` for repo-local imports.
+- **Environment** – `.env` holds `ARCHIVE_PASSPHRASE`; `SMARTHOME_DB` points to the staging DuckDB.
+- **Schemas** – `schemas/stage2.sql` and `schemas/citations.sql` define the DuckDB schemas.
+- **Notebooks** – Generated by `build_visualization_notebooks.py` into `notebooks/1/` (wave 1) and `notebooks/2/` (wave 2); regenerated, never hand-edited.
 
-### Prompt Library
-- **Assemble a prompt**: `.\.venv\Scripts\python.exe scripts/assemble_prompt.py --template followup_dispatch --out prompts/dispatch/<date>_wave2.md`
-- **Follow-up agenda**: `.\.venv\Scripts\python.exe scripts/formulate_research_questions.py --stage2-dir "research/raw/Stage 2/Extraction 1" --output-dir "research/processed/FollowUps"`
+## Key Design Patterns
 
-### Visualization Notebooks
-- **Rebuild notebooks**: `.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py` (the `.ipynb` files are generated; edit the generator, not the notebooks)
-- **Verify notebooks match the generator**: `.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py --check`
-- **Notebook focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_viz_notebooks.py -q` (executes every notebook headless in a real Jupyter kernel)
-- **Shared library focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_viz_core.py -q`
+1. **Deterministic Identifiers** – `stable_id(kind, value)` produces a repeatable ID (verified in `src/ingest_citations.py`). Used for claim tracking across ingestion, export, and visualization.
+2. **Heuristic Linkage** – Claims are linked to metrics/entities via section/`source_ref` rather than enforced foreign keys. This allows flexible, ad-hoc relationships.
+3. **Read-Only DB Access** – Most database operations use `read_only=True` except during import, export, and verification.
+4. **Pre-flight Gate Checks** – `frontmatter_gate_failures()` validates Markdown structure before loading.
+5. **Property-Based Testing** – `hypothesis` adds property tests for URL normalization, stable-ID determinism, classification membership, and table parsing.
+6. **Round-Trip Verification** – Export and import pipelines include verification steps comparing schema, contents, and views.
 
-### Testing
-- **Full suite**: `.\.venv\Scripts\python.exe -m pytest src/tests -q`
-- **Export focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_export_databases.py -q`
-- **Archive focus**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_archive_roundtrip.py -q`
-- **Prompt lint**: `.\.venv\Scripts\python.exe -m pytest src/tests/test_prompts.py -q` (Tier 1 rules R1–R5; R5 asserts prompt commands match AGENTS.md verbatim — keep commands in sync)
-- **No linter/typechecker**: there is no `ruff`/`mypy` config; the only automated checks are pytest + the prompt lint rules.
+## Important Files
 
-### Export Protocol
-- **Full export**: `.\.venv\Scripts\python.exe scripts/export_databases.py`
-- **Partial options**: `--which all|citations|stage2|smarthome` `--formats csv,parquet` `--overwrite` `--no-verify` `--timestamp <ts>` (diagnostics only)
+| Path | Purpose |
+|------|----------|
+| `src/viz_core.py` | Visualization helpers, claim/metric/entity fetchers |
+| `src/stage2_import_core.py` | Stage 2 Markdown → DuckDB import |
+| `src/ingest_citations.py` | Citation extraction from Markdown tables |
+| `src/db_export_core.py` | CSV/Parquet bundle export with verification |
+| `src/archive_core.py` | ECA encryption & archiving |
+| `src/followup_core.py` | Gap detection and follow-up question generation |
+| `src/prompt_core.py` | Prompt template assembly and linting (R1–R5) |
+| `schemas/stage2.sql` | DuckDB schema for Stage 2 data |
+| `schemas/citations.sql` | DuckDB schema for citation data |
+| `scripts/assemble_prompt.py` | Template substitution for prompt generation |
+| `scripts/import_stage2.py` | Stage 2 data ingestion with frontmatter validation |
+| `scripts/formulate_research_questions.py` | Research agenda formation |
+| `scripts/export_databases.py` | Bulk DB export with manifest auditing |
+| `scripts/archive_stage1.py` | Archive creation (ECA) |
+| `scripts/restore_archive.py` | Archive restoration |
+| `scripts/build_visualization_notebooks.py` | Notebook generation from claim clusters (both waves) |
+| `scripts/wave2_notebook_specs.py` | Wave-2 notebook specs (`notebooks/2/`) |
+| `pytest.ini` | Test configuration (`pythonpath = .`) |
+| `requirements.txt` | 12-package dependency list |
+| `.gitignore` | Excludes venv, duckdb dumps, ECA archives, exported artifacts |
 
-## Gotchas That Will Bite
+## Development Commands
 
-### Archive Operations
-- **Delete risk**: `archive_stage1.py` **deletes source `.md` files** after verified roundtrip unless `--keep-originals` or `--dry-run`
-- **Passphrase order**: `--passphrase` → `$ARCHIVE_PASSPHRASE` env → `.env` → interactive prompt (archive prompts twice!)
-- **ECA slowness**: 600k PBKDF2 iterations make archive/encrypt tests expensive
+```bash
+# Install dependencies (uses repo venv)
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
-### Data Integrity
-- **Source preservation**: `build_database` uses temp file + atomic replace, carries forward unchanged files by SHA-256 cache
-- **Schema safety**: Broken schema leaves existing DB untouched (rollback test covers this)
-- **CSV vs Parquet**: CSV collapses empty strings to NULL in nullable columns; Parquet preserves NULL-vs-empty exactly
+# Run full test suite
+.\.venv\Scripts\python.exe -m pytest src/tests -q
 
-### DuckDB Specifics
-- **Dialect only**: `schemas/*.sql` uses DuckDB syntax (`CREATE OR REPLACE VIEW`, `FILTER (WHERE ...)`, `ADD COLUMN IF NOT EXISTS`)
-- **Parsing rules**: No fuzzy matching by design: publisher-only URLs, multi-URL cells, truncated URLs, unmapped classifications produce `unresolved`/`ambiguous` rows + `ingestion_warning` entries
-- **Claim requirement**: Claim tables require `claim` + `claim type` + `confidence` columns or they are skipped with `unsupported_table_shape` warning
-- **No claim→metric FK**: `schemas/stage2.sql` links claims to metrics only by shared `section` or `source_ref`. `viz_core` derives those links heuristically and labels the reason in a `linkage` column; never present that linkage as a stored relationship
-- **Value cells are authored strings**: `metric.value` holds `"3-5"`, `"1.4, 1.4.2, 1.5, 1.6"`, `"760 (45%)"`. Use `viz.parse_numbers` / `viz.range_value`; never assume a typed number
-- **Internal evaluation**: `First-Ratings.md` excluded from external recurrence/claims; `source.status`/`directness` stay `NULL` when unrecorded
+# Run specific test groups
+.\.venv\Scripts\python.exe -m pytest src/tests/test_viz_notebooks.py -q          # visualization notebooks
+.\.venv\Scripts\python.exe -m pytest src/tests/test_archive_roundtrip.py -q     # archive/ECA tests
+.\.venv\Scripts\python.exe -m pytest src/tests/test_export_databases.py -q     # export tests
+.\.venv\Scripts\python.exe -m pytest src/tests/test_prompts.py -q               # prompt lint rules (R1-R5)
 
-### Environment & Testing
-- **pytest.ini**: Sets `pythonpath=.` - always run from repo root
-- **Monkeypatching**: Tests monkeypatch `ingest_citations.ROOT` to isolate `analysis/**/*.md` ingestion
-- **ECA tests**: Hypothesis roundtrip tests (`test_archive_roundtrip.py`, `test_ingest_citations.py` Wave 6) are the expensive suite
+# Build notebooks (all waves: notebooks/1/ and notebooks/2/)
+.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py               # all waves
 
-## Architecture Notes
+# Stage 2 import (Extraction 2 -> data/smarthome.duckdb)
+.\.venv\Scripts\python.exe scripts/import_stage2.py --stage2-dir "research/raw/Stage 2/Extraction 2" --database "data/smarthome.duckdb" --warnings "data/smarthome_ingestion_warnings.jsonl" --schema "schemas/stage2.sql"
 
-### Multi-Database Topology
-- **Option A (fixed)**: Stage 2 data goes into dedicated databases, one per extraction folder, alongside untouched `data/citations.duckdb`: `data/stage2.duckdb` (Extraction 1) and `data/smarthome.duckdb` (Extraction 2)
-- **Extraction folders**: `research/raw/Stage 2/Extraction 1/`, `research/raw/Stage 2/Extraction 2/` — the importer does not recurse, so `--stage2-dir` must name the leaf folder holding the seven contract files
-- **Stage 2 contents**: `Entities.md`, `Metrics.md`, `Claims.md`, `Sources.md`, `Predicates.md`, `WorkflowMap.md`, `ExtractionLog.md` (identical contract for every extraction; `schemas/stage2.sql` is shared, never forked)
+# Citation ingestion
+.\.venv\Scripts\python.exe src/ingest_citations.py
 
-### Export Protocol
-- **Sources of truth**: `data/citations.duckdb`, `data/stage2.duckdb` and `data/smarthome.duckdb` only
-- **Export quality gates**: 8 gates (G1-G8) with specific failure modes and recovery steps
-- **Verification**: Every bundle re-imports into fresh temp database and compares schema, contents, views, FK checks
+# Build notebooks (all waves: notebooks/1/ and notebooks/2/)
+.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py               # all waves
+.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py --wave 2   # one wave only
+.\.venv\Scripts\python.exe scripts/build_visualization_notebooks.py --check    # fail if on-disk files are stale
 
-### File Structure Ownership
-- **research/raw/** → Raw Markdown files, Stage 1 archives
-- **research/processed/** → Cleaned research for analysis  
-- **data/** → Dataset snapshots (input/output, fixtures)
-- **schemas/*.sql** → DuckDB-only canonical table/view definitions
-- **analysis/*.sql** → DuckDB-only analysis queries and reports
+# Assemble a prompt
+.\.venv\Scripts\python.exe scripts/assemble_prompt.py
 
-## Development Workflow
+# Follow-up research agenda
+.\.venv\Scripts\python.exe scripts/formulate_research_questions.py
 
-### Command Order Matters
-1. **Validate first**: Always start archive operations with `--dry-run`
-2. **Test flow**: `test_export_databases.py` + `test_archive_roundtrip.py` + `test_viz_notebooks.py` → full suite (`src/tests`) → export. There is no lint/typecheck step (no ruff/mypy config).
-3. **Testing**: Run focused tests before full suite (`test_export_databases.py`, `test_archive_roundtrip.py`, `test_viz_core.py`, `test_viz_notebooks.py`)
+# Export databases
+.\.venv\Scripts\python.exe scripts/export_databases.py
 
-### Environment Setup
-- **Prefer repo venv**: `.\.venv\Scripts\python.exe` over system python
-- **if conda**: `conda activate datascience` is documented in `data/README.md` but `.venv` is verified working
+# Archive Stage 1 (dry-run first!)
+.\.venv\Scripts\python.exe scripts/archive_stage1.py --dry-run
 
-### Derived Artifacts
-- **Gitignored**: `*.duckdb`, `*.jsonl`, `.env`, `data/exports/`
-- **Source of truth**: Only `data/citations.duckdb`, `data/stage2.duckdb` and `data/smarthome.duckdb` are authoritative
-- **Exports**: One timestamped run directory per export, with `manifest.json` audit trail
+# Restore archive
+.\.venv\Scripts\python.exe scripts/restore_archive.py --archive <file>.tar.gz.enc --dest "research/raw/Stage 1/Wave 1"
+```
 
-## What to Avoid
+## Code Conventions
 
-### Common Mistakes
-- Running plain `python` instead of repo venv interpreter
-- Forgetting `--dry-run` on archive operations
-- Treating exports as source of truth
-- Converting DuckDB SQL to T-SQL
-- Editing hand-generated CSV/Parquet payloads
-- Running production databases with multiple writers
+- **Language**: Python (repo venv recommended).
+- **Style**: Type hints throughout; `from __future__ import annotations` is used in some files.
+- **Error Handling**: Custom exceptions (`Stage2ImportError`, `ExportError`, `PromptRenderError`, `ArchiveError`) raised on failures; loud failures prevent silent corruption.
+- **Async**: Minimal async usage; most I/O is synchronous via DuckDB's blocking driver.
 
-### Protocol Violations
-- Don't run archive against real data without `--keep-originals` or `--dry-run`
-- Don't edit production databases to suit exports
-- Don't present view snapshots as source tables
-- Don't commit derived artifacts (`data/exports/`, `*.duckdb` files)
-- Don't use automatic ECA encryption for exports by default
-- Don't hand-edit `notebooks/*.ipynb`; they are generated by `scripts/build_visualization_notebooks.py`
-- Don't chart a number the corpus does not record (e.g. inventing Matter release dates, an ecosystem device-type parity matrix, or per-control security scorecard results) — the notebooks state what is missing instead
+## Testing & QA
+
+- **Unit tests** – `src/tests/` contains 8 test files covering visualization, export, archive, prompts, stage2 import, follow-up research, citation ingestion, and notebooks.
+- **Notebook gate** – `test_viz_notebooks.py` parametrizes over both waves: every notebook is checked against the generator, executed headless in a Jupyter kernel (must produce a Plotly figure and no cell errors), and every `C###` / `M###` id it mentions is verified against the database.
+- **Integration tests** – Use real DuckDB instances (via `pytest.ini` pythonpath) and real ECA archives.
+- **Property-based** – `hypothesis` adds non-deterministic coverage for string parsing and numeric extraction.
+- **Coverage expectation** – Full suite (`src/tests -q`) runs daily; critical paths (archive roundtrip, citation ingestion) are marked as high priority.
+
+## Maintenance Notes
+
+- **Never commit** derived artifacts: `.duckdb` dumps, ECA archives (`.tar.gz.enc`), exported CSVs/Parquets, notebook outputs, and prompt templates. `data/exports/` is gitignored.
+- **Always use `--dry-run`** on archive creation and export operations.
+- **Keep `SMARTHOME_DB`** consistent across environments; rotate passphrases via `.env`.
+- **Review `AGENTS.md`** before making structural changes; it captures the current architecture and coding standards.

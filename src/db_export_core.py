@@ -40,6 +40,12 @@ PRODUCTION_DATABASES: dict[str, dict[str, str]] = {
         "warnings": "data/smarthome_ingestion_warnings.jsonl",
         "run_table": "stage2_run",
     },
+    "automationresearch": {
+        "database": "data/AutomationResearch.duckdb",
+        "schema": "schemas/stage2.sql",
+        "warnings": "data/AutomationResearch_ingestion_warnings.jsonl",
+        "run_table": "stage2_run",
+    },
 }
 
 EXPORT_FORMATS = ("csv", "parquet")

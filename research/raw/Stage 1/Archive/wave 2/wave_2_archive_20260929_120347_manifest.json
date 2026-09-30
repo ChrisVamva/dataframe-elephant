@@ -1,0 +1,235 @@
+{
+  "format": "ECA-v1",
+  "created_utc": "2026-09-29T12:03:47Z",
+  "archive_file": "wave_2_archive_20260929_120347.tar.gz.enc",
+  "source_directory": "C:\\Users\\user\\dataframe-elephant\\research\\raw\\Stage 1\\Wave 2",
+  "file_count": 44,
+  "total_uncompressed_bytes": 1360416,
+  "total_compressed_bytes": 512188,
+  "compression_ratio": 2.66,
+  "verification_status": "VERIFIED_OK",
+  "cipher": "AES-256-GCM",
+  "kdf": "PBKDF2-HMAC-SHA256 (600000 iterations)",
+  "files": [
+    {
+      "path": "SmartHomes_Key_Tech_Trends/00 Smart Homes Key Technology Trends - Index.md",
+      "size_bytes": 1803,
+      "sha256": "81fc87ed394d7b7448795bfa256c1f7d4af3aa593832d3dbd3c751fe9b3225c0"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/01 Matter & Interoperability/Matter and Thread as the Connectivity Foundation.md",
+      "size_bytes": 1772,
+      "sha256": "bc397fa478fa294db9b97babec2cfafdc877badb4961565cf9a63b8dc378d458"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/02 AI & Voice Control/From Voice Commands to Contextual Home Agents.md",
+      "size_bytes": 1814,
+      "sha256": "0367a2532da29f5da663cd10512b77f46aad0ae0bb8c48824346f7b02f8119c6"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/03 Energy & Sustainability/Smart Homes as Flexible Energy Systems.md",
+      "size_bytes": 2024,
+      "sha256": "de02ab6f2e9b2b4a831b798333ec02271b727306326fa274337601a6c01cc1eb"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/04 Security & Privacy/Security and Privacy as Lifecycle Architecture.md",
+      "size_bytes": 1905,
+      "sha256": "2367385a6bee5bea1b512bf3716a21beccd24b04c141d71b4759b90cafa1c766"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/05 Emerging Product Categories/Emerging Product Categories and Platform Shifts.md",
+      "size_bytes": 1873,
+      "sha256": "af328fbd5c13b120f51053009301d05a43263c3fcb58b7795020eee3cd7a6b1d"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/06 Business Customer Investor Lens/Business Customer and Investor Implications.md",
+      "size_bytes": 2175,
+      "sha256": "3abf7e33f07c7cf8ad9478b1d61f7992b8b0fa6568492b27535f47ef655ded58"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Category-by-Category Assessment/Category-by-Category Assessment.md",
+      "size_bytes": 151335,
+      "sha256": "731b93373b069b71994b0999ef1e00c8571c3086bc75fbc58d31ebbd3b0bcf46"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Coordinated Residential Energy Flexibility Model HVAC, Heat Pumps, Water Heaters, EVs, Batteries, Solar, and Appliances/Coordinated Residential Energy Flexibility Model HVAC, Heat Pumps, Water Heaters, EVs, Batteries, Solar, and Appliances.md",
+      "size_bytes": 81441,
+      "sha256": "cd639f223cc854cd7229cd9e537a657ae0dbf8ee355d7f1664d37a573cd02a5b"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Device Types & Feature Consistency/Device Types & Feature Consistency.md",
+      "size_bytes": 101976,
+      "sha256": "457475c99c9b8adf9c2668ddea7219dd68236e9d27f98af19d28a01faf571c91"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Dominant Barriers Cost, Privacy, and Setup Outweigh Subscriptions/Dominant Barriers Cost, Privacy, and Setup Outweigh Subscriptions.md",
+      "size_bytes": 112084,
+      "sha256": "63803c347de197c012389a4c3b20e10ee429f25c075b8311159a4b19c167bca9"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/FollowUp Research Evaluation.md",
+      "size_bytes": 10818,
+      "sha256": "930d1c77363010a207dd54dc1cbc8fb2f769646ab6a1574f20314de44e265afc"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Home-AI Intent Interpretation and Action Safety Benchmark/Home-AI Intent Interpretation and Action Safety Benchmark.md",
+      "size_bytes": 84145,
+      "sha256": "ca820fda54d48a1bb156c2760ba91dde683fd87fa5d5b9dd94a2a0f6114d82a8"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Mixed-Method Study Design Smart-Home Adoption, Retention, and Willingness to Pay/Mixed-Method Study Design Smart-Home Adoption, Retention, and Willingness to Pay.md",
+      "size_bytes": 20039,
+      "sha256": "e597546a45a4cbb8143340d5a55f88d83def64857a453ea76411d9cd8aea81fa"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Reproducible Test Protocol/Reproducible Test Protocol.md",
+      "size_bytes": 114654,
+      "sha256": "841628a9682bfdc3a42d867c10578c6d5275a5a468ce5a218ebd729e822b617d"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Safe Autonomy vs. Required Confirmation/Safe Autonomy vs. Required Confirmation.md",
+      "size_bytes": 108262,
+      "sha256": "9a035e92a61c17e8ca9e518ee4f7c878d087133c37b9a342d146d7650415a2cf"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Smart-Home Product Security and Privacy Lifecycle Scorecard/Smart-Home Product Security and Privacy Lifecycle Scorecard.md",
+      "size_bytes": 143202,
+      "sha256": "76f5b62c9874495772db191caccc87b3207f5f5685d0ece0dad607c83c6d86f6"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Support Periods and Update Mechanisms by Device Category/Support Periods and Update Mechanisms by Device Category.md",
+      "size_bytes": 145841,
+      "sha256": "cfe68c4f33395e577e0bfb3626f4898697ecddc108d1fafd22fe30f012ee81d1"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Untitled/Untitled.md",
+      "size_bytes": 27325,
+      "sha256": "40231069194b46abe2b29fa5fc26c84920fe6afc0d870da1398960c76f3c7182"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/What Savings Are Measured Rather Than Claimed/What Savings Are Measured Rather Than Claimed.md",
+      "size_bytes": 116156,
+      "sha256": "d2a4b228d13265d61778094ee3805f03c63cc00014cef5869130e4176679aff2"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUp/Which Advantages Survive Standardization/Which Advantages Survive Standardization.md",
+      "size_bytes": 102153,
+      "sha256": "47866d33f242d9ee6c46e013f570917d87fe846c92a3171dc3bfd3fd16b8992c"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/FollowUpResearch_Questions.md",
+      "size_bytes": 6053,
+      "sha256": "abbb2d5f0e9466530b6998a8b1a266e4e4baa008e2e33a5147c1a6e884d514cf"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/01 Matter Thread Interoperability.md",
+      "size_bytes": 857,
+      "sha256": "9abf6e7e5ea9e7f2cf5bae737e3b0333570f37b528eed8c0e5c83db2324bac56"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/02 AI Contextual Control.md",
+      "size_bytes": 812,
+      "sha256": "9c5bba6c1ff8ee60b5d818dd864f2792d74b139fbceb22780b1d4c678bb79dca"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/03 Energy Sustainability.md",
+      "size_bytes": 854,
+      "sha256": "8f05aad00beadd7e520d50019b09b261614256a43384cdf670892656777e52f6"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/04 Security Privacy Lifecycle.md",
+      "size_bytes": 865,
+      "sha256": "116c5de6d7c146b051041ca37e2889e3ced6ed8eebb2cd4b21c6a7a606abe504"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/05 Emerging Product Categories.md",
+      "size_bytes": 764,
+      "sha256": "1610094060c869860bb2687b8fcc2f03c4a29fb9161f895d2c5580d9a0393e9e"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/06 Customer Adoption.md",
+      "size_bytes": 815,
+      "sha256": "8513f98ffdccec8ce1c3e3777d4736794542044f753c2f4a726347cb63ef9913"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/07 Business Investor Dynamics.md",
+      "size_bytes": 871,
+      "sha256": "459ef5050837b0a500521e95b0183900b0f3997aa38febbfc94471e1666bbc69"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/08 Interoperability Test Matrix.md",
+      "size_bytes": 775,
+      "sha256": "23cca4be00873110bb8735262c47495b1ca45c1f61906ab48b556d4d76a5bf5f"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/09 AI Safety Benchmark.md",
+      "size_bytes": 770,
+      "sha256": "0e6abd8db731a175bfb66732e8514b25907fbda28e34d2262a6c02551c74154b"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/10 Residential Flexibility Economics.md",
+      "size_bytes": 774,
+      "sha256": "df20d1f2283477db3081dabb5182213912e4fc41bfb085c90b993636af8c846c"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/11 Lifecycle Security Scorecard.md",
+      "size_bytes": 812,
+      "sha256": "451b10a94a80b334bf1f189ea73840c645a63fa4e87d33f4d9ef5e67138727a9"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/12 Adoption Willingness to Pay Study.md",
+      "size_bytes": 767,
+      "sha256": "b9654a753cc9e952ddeb029644a274ef02acb9ec3e820e7e22860eea33adf117"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/13 Unresolved Tensions and Trade-offs.md",
+      "size_bytes": 1132,
+      "sha256": "63dfe2114ec5b041f8ad5158b3550b74463f7a5abb5f65e406a3198015e6e902"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Prompts/README.md",
+      "size_bytes": 885,
+      "sha256": "224dd270448564299b9f3db1ed046119f375a28f657703f8404f294192eed252"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Research Orientation/AI Integration & Voice Control.md",
+      "size_bytes": 862,
+      "sha256": "d0b8e099ca9875e9cca180952ab3d57373365e51488746c045247ce56d98743c"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Research Orientation/Advanced Security Features.md",
+      "size_bytes": 648,
+      "sha256": "01f007b90e635770ec087ce682a42be69988b842ac8680839f668aeb92d08c75"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Research Orientation/Emerging Product Categories.md",
+      "size_bytes": 835,
+      "sha256": "46060415d1f05e81505990f596d4433d4a5e1f57c1e210cca051306379315309"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Research Orientation/Matter Protocol Standardization.md",
+      "size_bytes": 848,
+      "sha256": "1bb971e4f41d3c3afad6b0c14817a3c8af32d80441b191a8a8982b67a7b6b8d3"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Research Orientation/Questions by Perspective.md",
+      "size_bytes": 2839,
+      "sha256": "5902a66f05462b628528267f6b02f23177de0d8cabaa94d5715ab2e346430c1a"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Research Orientation/Sustainability & Energy Management.md",
+      "size_bytes": 756,
+      "sha256": "accc78033ce0fce550953f9c5ff7c70f1463633aee170fa46f7b2be8e2ceb96c"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Sources & Methods/Category Note Template.md",
+      "size_bytes": 658,
+      "sha256": "2f705a556d9902ea277f47477690fdc85794d462977dd9d7d7492241f504f866"
+    },
+    {
+      "path": "SmartHomes_Key_Tech_Trends/Sources & Methods/Source Register.md",
+      "size_bytes": 2367,
+      "sha256": "2bf925fba7f799711ae88033b008325dc3e9014973b09875f19ea05209f966d6"
+    }
+  ]
+}

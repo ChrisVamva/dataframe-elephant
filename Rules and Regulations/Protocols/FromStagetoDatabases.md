@@ -175,6 +175,13 @@ paths:
   --database "data/smarthome.duckdb" `
   --warnings "data/smarthome_ingestion_warnings.jsonl" `
   --schema "schemas/stage2.sql"
+
+# Extraction 3 -> data/AutomationResearch.duckdb (example for new extractions)
+.\.venv\Scripts\python.exe scripts/import_stage2.py `
+  --stage2-dir "research/raw/Stage 2/Extraction 3" `
+  --database "data/AutomationResearch.duckdb" `
+  --warnings "data/AutomationResearch_ingestion_warnings.jsonl" `
+  --schema "schemas/stage2.sql"
 ```
 
 ---
@@ -221,12 +228,13 @@ Re-run this import (or add a new `--database` target) when any of the
 following occurs:
 
 - Any Stage 2 file is revised, added, or re-gated.
-- A new extraction folder appears under `research/raw/Stage 2/` — create a new
-  `--database` / `--warnings` pair for it and register it in
-  `PRODUCTION_DATABASES` (`src/db_export_core.py`), `--which` choices
-  (`scripts/export_databases.py`), `data/README.md`, and
-  [ExportDatabase.md](ExportDatabase.md) §3.1–§3.2 rather than extending an
-  existing extraction's database.
+- A new extraction folder appears under `research/raw/Stage 2/` (e.g., the highest numeric value, such as `Extraction 3`, `Extraction 4`, etc.) — create a new
+  `--database` / `--warnings` pair for it (e.g., `data/AutomationResearch.duckdb` and `data/AutomationResearch_ingestion_warnings.jsonl` for `Extraction 3`) and register it in:
+  - `PRODUCTION_DATABASES` (`src/db_export_core.py`),
+  - `--which` choices (`scripts/export_databases.py`),
+  - `data/README.md`,
+  - [ExportDatabase.md](ExportDatabase.md) §3.1–§3.2.
+  **Never extend an existing extraction's database** (e.g., do not add `Extraction 3` data to `smarthome.duckdb`).
 - `schemas/stage2.sql` changes (new table, column, or view).
 - The importer introduces a new warning type affecting table structure.
 - A FollowUpResearch wave resolves a gap recorded in `extraction_decision`.
@@ -238,7 +246,9 @@ not silently overwrite history.
 
 ## 9. Final principle
 
-The import is judged not by how clean the database looks, but by whether a
-researcher who has never read Stage 1 can use the database alone to find
-every established fact, its conditions and boundaries, what remains
-uncertain, and what would resolve that uncertainty.
+The import is judged not by how clean the database looks, but by whether a researcher who has never read Stage 1 can use **any Stage 2 database** (e.g., `stage2.duckdb`, `smarthome.duckdb`, `AutomationResearch.duckdb`) alone to find:
+- Every established fact,
+- Its conditions and boundaries,
+- What remains uncertain,
+- What would resolve that uncertainty.
+**This principle applies to all new databases** created from Stage 2 extractions.

@@ -41,16 +41,23 @@ The typed Stage 2 mirrors are built per `Protocols/FromStagetoDatabases.md` (Opt
   --database "data/smarthome.duckdb" `
   --warnings "data/smarthome_ingestion_warnings.jsonl" `
   --schema "schemas/stage2.sql"
+
+# Extraction 3 (Automation Market Research) -> data/AutomationResearch.duckdb
+.\.venv\Scripts\python.exe scripts/import_stage2.py `
+  --stage2-dir "research/raw/Stage 2/Extraction 3" `
+  --database "data/AutomationResearch.duckdb" `
+  --warnings "data/AutomationResearch_ingestion_warnings.jsonl" `
+  --schema "schemas/stage2.sql"
 ```
 
-Both databases use the same canonical contract (`schemas/stage2.sql`): eleven tables (`stage2_run`, `stage2_input`, `stage2_document`, `entity`, `metric`, `stage2_claim`, `source_mirror`, `predicate`, `workflow_stage`, `extraction_decision`, `stage2_warning`) and four gap views. The schema file is shared, never forked per extraction. The importer does not recurse, so `--stage2-dir` must name the folder that directly contains the seven files; a bare `scripts/import_stage2.py` fails because the files no longer sit at `research/raw/Stage 2/` root. All frontmatter gates must be `pass` or the import is rejected. Uncertainty markers are preserved as `*_stated` BOOLs; gap views (`unstated_boundaries`, `unstated_conditions`, `missing_falsifiers`, `open_questions`) feed the FollowUpResearch scanners.
+All Stage 2 databases use the same canonical contract (`schemas/stage2.sql`): eleven tables (`stage2_run`, `stage2_input`, `stage2_document`, `entity`, `metric`, `stage2_claim`, `source_mirror`, `predicate`, `workflow_stage`, `extraction_decision`, `stage2_warning`) and four gap views. The schema file is shared, never forked per extraction. The importer does not recurse, so `--stage2-dir` must name the folder that directly contains the seven files; a bare `scripts/import_stage2.py` fails because the files no longer sit at `research/raw/Stage 2/` root. All frontmatter gates must be `pass` or the import is rejected. Uncertainty markers are preserved as `*_stated` BOOLs; gap views (`unstated_boundaries`, `unstated_conditions`, `missing_falsifiers`, `open_questions`) feed the FollowUpResearch scanners.
 
 ## Database exports
 
-Export all three production databases into timestamped, gitignored bundles (per `Rules and Regulations/Protocols/ExportDatabase.md`):
+Export all production databases into timestamped, gitignored bundles (per `Rules and Regulations/Protocols/ExportDatabase.md`):
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/export_databases.py [--which all|citations|stage2|smarthome] [--formats csv,parquet] [--overwrite] [--no-verify]
+.\.venv\Scripts\python.exe scripts/export_databases.py [--which all|citations|stage2|smarthome|automationresearch] [--formats csv,parquet] [--overwrite] [--no-verify]
 ```
 
 Each run writes `data/exports/export_<UTC-timestamp>/` with `<db>_csv/` and `<db>_parquet/` restorable `EXPORT DATABASE` bundles (`schema.sql` + `load.sql` + table files), `views/<db>/` read-only snapshots of each view's query results, companion `<db>_warnings.jsonl` copies, plus `README.md` and `manifest.json` (inventory, run ids, row counts, checksums, DuckDB version, restore instructions, verification status). Sources are opened read-only; the exporter asserts sha + mtime unchanged. Verification re-imports each bundle into a fresh temp DB and compares schema, full contents (`ORDER BY ALL`), view counts, and FK checks. Fidelity caveat: CSV collapses empty strings to NULL in nullable columns (DuckDB CSV semantics); Parquet preserves NULL-vs-empty exactly. The `*.duckdb` files remain the source of truth; `data/exports/` is gitignored and never committed. No ECA encryption is applied (follow `Encryption-Compression-Archiving.md` separately if needed).

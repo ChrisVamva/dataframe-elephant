@@ -6,13 +6,24 @@ means the claim ids each notebook reads from ``data/smarthome.duckdb`` are
 declared once, in one place, and validated by
 ``src/tests/test_viz_notebooks.py`` (which executes every notebook headless).
 
-Every notebook follows the same cell contract, defined in ``_NOTEBOOK_TEMPLATE``:
+The catalogue is published in waves, one directory per wave:
+
+    notebooks/1/   wave 1 -- the pilot catalogue (index + four domains)
+    notebooks/2/   wave 2 -- the remaining catalogue (see wave2_notebook_specs)
+
+Both waves are produced by this one builder and share the same cell contract,
+defined in ``build_notebook``:
 
     title -> provenance -> primary evidence -> supporting context
           -> uncertainty & gaps -> reproducibility
 
+Wave 2's spec dicts live in ``scripts/wave2_notebook_specs.py``; the cell
+contract, the bootstrap cell and the shared evidence fragments stay here so
+that neither wave can drift from the other.
+
 Usage:
     .\\.venv\\Scripts\\python.exe scripts/build_visualization_notebooks.py
+    .\\.venv\\Scripts\\python.exe scripts/build_visualization_notebooks.py --wave 2
     .\\.venv\\Scripts\\python.exe scripts/build_visualization_notebooks.py --check
 """
 from __future__ import annotations
@@ -26,8 +37,13 @@ import nbformat
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+# Wave-2 specs are imported by module name (lazily, see wave_specs) so that a
+# checkout can build one wave without importing the other's spec module.
+sys.path.insert(0, str(ROOT / "scripts"))
 
-NOTEBOOK_DIR = ROOT / "notebooks"
+NOTEBOOK_ROOT = ROOT / "notebooks"
+WAVES = ("1", "2")
+WAVE_DIRS = {wave: NOTEBOOK_ROOT / wave for wave in WAVES}
 
 # Shared bootstrap: the notebooks must run from any working directory, so the
 # repo root is located from this file rather than from the launch cwd.
@@ -1151,7 +1167,7 @@ show(pd.DataFrame(
     ),
 )
 
-NOTEBOOK_SPECS = [INDEX, MATTER, ENERGY, SECURITY, BUSINESS]
+WAVE1_SPECS = [INDEX, MATTER, ENERGY, SECURITY, BUSINESS]
 
 
 def _stamp_cell_ids(nb: nbformat.NotebookNode, name: str) -> nbformat.NotebookNode:
@@ -1168,50 +1184,100 @@ def _stamp_cell_ids(nb: nbformat.NotebookNode, name: str) -> nbformat.NotebookNo
     return nb
 
 
-def build_all() -> list[Path]:
-    NOTEBOOK_DIR.mkdir(parents=True, exist_ok=True)
+# --------------------------------------------------------------------------
+# Wave registry
+# --------------------------------------------------------------------------
+
+# Wave 1 was published as a flat ``notebooks/`` directory; it now lives in
+# ``notebooks/1/`` alongside wave 2 in ``notebooks/2/``. The spec dicts are
+# unchanged by that move -- regenerating must reproduce the committed files.
+def wave_specs(wave: str) -> list[dict]:
+    """Notebook specs for one wave, in catalogue order."""
+    if wave == "1":
+        return WAVE1_SPECS
+    if wave == "2":
+        # Imported lazily: the wave-2 module imports this one for the shared
+        # cell contract, so a module-level import here would be circular.
+        import wave2_notebook_specs
+
+        return wave2_notebook_specs.WAVE2_SPECS
+    raise ValueError(f"unknown wave: {wave!r}; expected one of {WAVES}")
+
+
+def notebook_dir(wave: str) -> Path:
+    """Directory holding one wave's notebooks."""
+    if wave not in WAVE_DIRS:
+        raise ValueError(f"unknown wave: {wave!r}; expected one of {WAVES}")
+    return WAVE_DIRS[wave]
+
+
+def stamp_cell_ids(nb: nbformat.NotebookNode, name: str) -> nbformat.NotebookNode:
+    """Public alias for :func:`_stamp_cell_ids` (used by tests and wave 2)."""
+    return _stamp_cell_ids(nb, name)
+
+
+def build_wave(wave: str) -> list[Path]:
+    """Write every notebook of one wave, returning the paths written."""
+    directory = notebook_dir(wave)
+    directory.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for spec in NOTEBOOK_SPECS:
+    for spec in wave_specs(wave):
         nb = _stamp_cell_ids(build_notebook(**spec), spec["name"])
-        path = NOTEBOOK_DIR / f"{spec['name']}.ipynb"
+        path = directory / f"{spec['name']}.ipynb"
         path.write_text(nbformat.writes(nb), encoding="utf-8")
         written.append(path)
     return written
 
 
-def notebook_paths() -> list[Path]:
-    return sorted(NOTEBOOK_DIR.glob("*.ipynb"))
+def build_all(waves: tuple[str, ...] = WAVES) -> list[Path]:
+    return [path for wave in waves for path in build_wave(wave)]
+
+
+def notebook_paths(wave: str = "1") -> list[Path]:
+    return sorted(notebook_dir(wave).glob("*.ipynb"))
+
+
+def stale_notebooks(waves: tuple[str, ...] = WAVES) -> list[str]:
+    """Notebooks on disk that differ from (or are missing from) the generator."""
+    stale: list[str] = []
+    for wave in waves:
+        for spec in wave_specs(wave):
+            path = WAVE_DIRS[wave] / f"{spec['name']}.ipynb"
+            expected = nbformat.writes(
+                _stamp_cell_ids(build_notebook(**spec), spec["name"])
+            )
+            if not path.exists() or path.read_text(encoding="utf-8") != expected:
+                stale.append(f"notebooks/{wave}/{path.name}")
+    return stale
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "--wave",
+        choices=(*WAVES, "all"),
+        default="all",
+        help="which notebook wave to build or check (default: all)",
+    )
     parser.add_argument(
         "--check",
         action="store_true",
         help="fail if any notebook on disk differs from the generated content",
     )
     args = parser.parse_args(argv)
+    waves = WAVES if args.wave == "all" else (args.wave,)
 
     if args.check:
-        import tempfile
-
-        stale: list[str] = []
-        with tempfile.TemporaryDirectory() as tmp:
-            for spec in NOTEBOOK_SPECS:
-                path = NOTEBOOK_DIR / f"{spec['name']}.ipynb"
-                expected = nbformat.writes(
-                    _stamp_cell_ids(build_notebook(**spec), spec["name"])
-                )
-                if not path.exists() or path.read_text(encoding="utf-8") != expected:
-                    stale.append(path.name)
+        stale = stale_notebooks(waves)
         if stale:
             print("notebooks out of date: " + ", ".join(stale))
             print("regenerate with: python scripts/build_visualization_notebooks.py")
             return 1
-        print(f"{len(NOTEBOOK_SPECS)} notebooks up to date")
+        total = sum(len(wave_specs(wave)) for wave in waves)
+        print(f"{total} notebooks up to date")
         return 0
 
-    for path in build_all():
+    for path in build_all(waves):
         print(f"wrote {path.relative_to(ROOT)}")
     return 0
 

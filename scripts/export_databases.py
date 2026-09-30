@@ -22,7 +22,7 @@ from src.db_export_core import export_all  # noqa: E402
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export production DuckDBs (CSV + Parquet).")
     parser.add_argument("--export-root", type=Path, default=PROJECT_ROOT / "data" / "exports")
-    parser.add_argument("--which", choices=("all", "citations", "stage2", "smarthome"), default="all")
+    parser.add_argument("--which", choices=("all", "citations", "stage2", "smarthome", "automationresearch"), default="all")
     parser.add_argument("--formats", default="csv,parquet")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--no-verify", action="store_true")
