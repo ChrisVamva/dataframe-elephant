@@ -196,6 +196,16 @@ def verify_archive_data(
     return True, extracted_hashes
 
 
+def _validate_path(path: Path, base_dir: Path | None = None) -> Path:
+    """Validate that a path is safe and optionally contained within base_dir."""
+    resolved = path.resolve()
+    if base_dir is not None:
+        base_resolved = base_dir.resolve()
+        if not resolved.is_relative_to(base_resolved):
+            raise ArchiveError(f"Path {path} escapes base directory {base_dir}")
+    return resolved
+
+
 def build_manifest_data(
     source_dir: Path,
     files_info: Dict[str, Dict[str, Any]],
@@ -203,6 +213,9 @@ def build_manifest_data(
     archive_filename: str,
 ) -> Dict[str, Any]:
     """Generate manifest dictionary for audit and traceability."""
+    # Validate source directory path
+    _validate_path(source_dir)
+    
     total_uncompressed = sum(f["size_bytes"] for f in files_info.values())
     ratio = (total_uncompressed / compressed_size) if compressed_size > 0 else 1.0
 
