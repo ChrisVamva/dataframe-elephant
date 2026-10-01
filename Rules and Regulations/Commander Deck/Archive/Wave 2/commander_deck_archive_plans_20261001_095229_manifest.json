@@ -1,0 +1,45 @@
+{
+  "format": "ECA-v1",
+  "created_utc": "2026-10-01T09:52:29Z",
+  "archive_file": "commander_deck_archive_plans_20261001_095229.tar.gz.enc",
+  "source_directory": "C:\\Users\\user\\dataframe-elephant\\Rules and Regulations\\Commander Deck\\Plans\\Archive",
+  "file_count": 6,
+  "total_uncompressed_bytes": 101796,
+  "total_compressed_bytes": 35138,
+  "compression_ratio": 2.9,
+  "verification_status": "VERIFIED_OK",
+  "cipher": "AES-256-GCM",
+  "kdf": "PBKDF2-HMAC-SHA256 (600000 iterations)",
+  "files": [
+    {
+      "path": "CommanderPlan.md",
+      "size_bytes": 24389,
+      "sha256": "88805fc7994732f52dfa4b09b999731c7c7bed06492918082f230f256e6c9ea4"
+    },
+    {
+      "path": "OptimalSPrompt.md",
+      "size_bytes": 22753,
+      "sha256": "6964cd5b45837e07b376d98da638c06caf08124b77e3b89f092f3b57ea8a6411"
+    },
+    {
+      "path": "OrganisationPrinciplesAuthority.md",
+      "size_bytes": 13480,
+      "sha256": "c1c9f8a2613878aeb5ac5c44701c80674edfe5c51f9f7793513181adcfafe4f3"
+    },
+    {
+      "path": "ProcessEstablishment.md",
+      "size_bytes": 5427,
+      "sha256": "ed74bd01e575533e7f2e596781d170cf8ca1243d8772dc47f5dfb410ce805650"
+    },
+    {
+      "path": "PromptReformPlan.md",
+      "size_bytes": 24316,
+      "sha256": "e6febc0b848a07f684dab319ba9075ecab1227a64261c7f1074d0d9c24e33e60"
+    },
+    {
+      "path": "ResearchPlan.md",
+      "size_bytes": 11431,
+      "sha256": "68f93c6f6e50509a3cc2098d27b6b62f7b6d88b8cbe58bdcbb0535cef33a43ed"
+    }
+  ]
+}

@@ -20,7 +20,7 @@ external legal advice or records-retention requirements.
 | What procedure governs a workflow? | The accepted protocol in [Protocols/](Protocols/) for that workflow. |
 | Is a proposed organization change approved? | The current plan's status and explicit approval record in [Commander Deck/Plans/](Commander%20Deck/Plans/). A plan does not silently amend a protocol. |
 | Where are issues and change history? | [Commander Deck/Problems/](Commander%20Deck/Problems/) and [Commander Deck/State changes/](Commander%20Deck/State%20changes/). These are evidence/history, not standing rules. |
-| Where are reusable prompt assets? | Repository-level [prompts/README.md](../prompts/README.md). `Commander Deck/prompts/` contains operational pointers only. |
+| Where are reusable prompt assets? | Prompt templates live in `src/prompt_templates/`; `src/prompt_core.py` lints them and `scripts/assemble_prompt.py` handles assembly. |
 | How is archived material handled? | [Encryption-Compression-Archiving.md](Protocols/Encryption-Compression-Archiving.md) and the readable [Commander Deck archive manifest](Commander%20Deck/Archive/commander_deck_archive_20260928_122517_manifest.json). |
 
 When sources conflict, follow the owning rule or protocol only when its scope
@@ -55,14 +55,14 @@ an amendment.
 | [Plans/](Commander%20Deck/Plans/) | Proposals, design rationale, and approved implementation plans. See the plan register below. |
 | [Problems/](Commander%20Deck/Problems/) | Issue and review findings; check each finding's present resolution in its owning source. |
 | [State changes/](Commander%20Deck/State%20changes/) | Dated history. Do not edit a past snapshot to make it match current state. |
-| [prompts/](Commander%20Deck/prompts/) | Thin pointers and operational index; canonical reusable assets live in repository-level `prompts/`. |
+| `src/prompt_templates/` | Prompt templates and shared `lib/` partials (lint rules live in `src/prompt_core.py`). |
 | [Archive/](Commander%20Deck/Archive/) | ECA archive payload and readable manifest; the payload is not current guidance. |
 
 ### Plan Register
 
 | Document | Status | Purpose / note |
 | --- | --- | --- |
-| [OptimalSPrompt.md](Commander%20Deck/Plans/OptimalSPrompt.md) | Plan; current status needs maintainer review | Prompt-system design rationale. Its claim that the repository-level `prompts/` library is absent is now stale. |
+| [OptimalSPrompt.md](Commander%20Deck/Plans/OptimalSPrompt.md) | Plan; current status needs maintainer review | Prompt-system design rationale. Its references to a separate repository-level `prompts/` library are now stale; prompts live in `src/prompt_templates/`. |
 | [ProcessEstablishment.md](Commander%20Deck/Plans/ProcessEstablishment.md) | Frontmatter says `active`; closure/status needs review | ECA application. The document records a verified archive run; current operation is governed by the ECA protocol. |
 | [OrganisationPrinciplesAuthority.md](Commander%20Deck/Plans/OrganisationPrinciplesAuthority.md) | Draft | Provenance-linked synthesis of the four Obsidian examples and external guidance. |
 | [CommanderPlan.md](Commander%20Deck/Plans/CommanderPlan.md) | In progress; initial no-move scope authorized | Implementation plan for this governance-space renovation. |
@@ -92,10 +92,10 @@ maintainer before relying on it as active policy.
 | [Commander Deck/Plans/OrganisationPrinciplesAuthority.md](Commander%20Deck/Plans/OrganisationPrinciplesAuthority.md) | Source authority synthesis | Draft; provenance for this renovation. |
 | [Commander Deck/Plans/CommanderPlan.md](Commander%20Deck/Plans/CommanderPlan.md) | Governance renovation plan | In progress; no physical moves authorized. |
 | [Commander Deck/Problems/Report1.md](Commander%20Deck/Problems/Report1.md) | Citation database review / findings | Historical findings; verify resolution in current sources before treating as open or closed. |
-| [Commander Deck/prompts/README.md](Commander%20Deck/prompts/README.md) | Prompt pointer index | Operational navigation; verify targets when changing prompt paths. |
-| [Commander Deck/prompts/Research Prompt.md](Commander%20Deck/prompts/Research%20Prompt.md) | Prompt pointer | Target/status check needed; canonical prompt remains under repository-level `prompts/`. |
-| [Commander Deck/prompts/FollowUpPrompt.md](Commander%20Deck/prompts/FollowUpPrompt.md) | Prompt pointer | Target/status check needed; canonical prompt remains under repository-level `prompts/`. |
-| [Commander Deck/prompts/NextResearchPrompt.md](Commander%20Deck/prompts/NextResearchPrompt.md) | Prompt pointer | Target/status check needed; canonical prompt remains under repository-level `prompts/`. |
+| `scripts/assemble_prompt.py` | Prompt assembly script. |
+| `src/prompt_templates/` | Prompt templates and shared `lib/` partials. |
+| `scripts/formulate_research_questions.py` | Follow-up research question generation. |
+| `scripts/assemble_prompt.py` | Next research prompt assembly. |
 | [Commander Deck/State changes/28092026Report.md](Commander%20Deck/State%20changes/28092026Report.md) | Dated state report | Historical snapshot; 67/67 tests predates the current 68-pass result. |
 | [Commander Deck/State changes/28092026OrganisationRenovation.md](Commander%20Deck/State%20changes/28092026OrganisationRenovation.md) | Dated implementation record | Records implementation and validation of CommanderPlan Phases 0-2. |
 | [Commander Deck/Archive/commander_deck_archive_20260928_122517_manifest.json](Commander%20Deck/Archive/commander_deck_archive_20260928_122517_manifest.json) | Archive inventory and provenance | Readable; reports four members and `VERIFIED_OK`. |

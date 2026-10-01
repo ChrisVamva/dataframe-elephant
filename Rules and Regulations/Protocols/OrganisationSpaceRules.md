@@ -46,7 +46,7 @@ does not grant it authority beyond its explicit scope.
 | Plan | `Commander Deck/Plans/` | A proposal or approved implementation sequence. A draft/proposed plan is not permission to alter files. Record its status and approval explicitly. |
 | Problem or incident report | `Commander Deck/Problems/` | Evidence of an observed issue, risk, or defect. It does not by itself amend a rule or protocol. A remediation becomes authoritative only through an approved change to its owning document. |
 | State-change record | `Commander Deck/State changes/` | Dated history of an implemented change. It reports what changed; it is not a substitute for the current rule, plan, or code. |
-| Prompt pointer | `Commander Deck/prompts/` | A thin navigation/compatibility pointer to the canonical prompt library. Reusable prompt logic remains in repository-level `prompts/`; do not fork copies. |
+| Prompt pointer | `scripts/assemble_prompt.py` | A thin navigation/compatibility pointer to the canonical prompt library. Reusable prompt assets live in `src/prompt_templates/`; assembly and lint logic in `src/prompt_core.py` and `scripts/assemble_prompt.py`; do not fork copies. |
 | Archive | `Commander Deck/Archive/` | Superseded or completed material retained for history. Archived material is not current instruction. Use the ECA protocol when archiving. |
 | Folder index | `Rules and Regulations/README.md` | Entry point and link map to the current documents. It summarizes locations; it does not duplicate their rules. |
 
@@ -123,7 +123,7 @@ Rules and Regulations/
     |-- Plans/                        # proposals and approved roadmaps
     |-- Problems/                     # incident and risk records
     |-- State changes/                # dated implementation history
-    |-- prompts/                       # thin pointers only; assets live in /prompts
+    |-- scripts/assemble_prompt.py   # prompt assembly; templates in src/prompt_templates/
     `-- Archive/                       # historical archive plus its manifest
 ```
 

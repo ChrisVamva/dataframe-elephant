@@ -1,0 +1,35 @@
+{
+  "format": "ECA-v1",
+  "created_utc": "2026-10-01T09:52:29Z",
+  "archive_file": "commander_deck_archive_problems_20261001_095229.tar.gz.enc",
+  "source_directory": "C:\\Users\\user\\dataframe-elephant\\Rules and Regulations\\Commander Deck\\Problems\\Archive",
+  "file_count": 4,
+  "total_uncompressed_bytes": 70216,
+  "total_compressed_bytes": 25675,
+  "compression_ratio": 2.73,
+  "verification_status": "VERIFIED_OK",
+  "cipher": "AES-256-GCM",
+  "kdf": "PBKDF2-HMAC-SHA256 (600000 iterations)",
+  "files": [
+    {
+      "path": "3092026Report.md",
+      "size_bytes": 10940,
+      "sha256": "851cbe86518eece3d52f2a4d9f317253ffb0f25b07f22a48bbc2e86e03a4d795"
+    },
+    {
+      "path": "How_to_Improve_Database_quolity.md",
+      "size_bytes": 20441,
+      "sha256": "f2895796ee42e2304a405b61946fed16e603869a3f79c6bc8e6d62f94fe9db94"
+    },
+    {
+      "path": "ProblemPrompts.md",
+      "size_bytes": 6758,
+      "sha256": "d13825b2e472aaeb0218caffb7f3d1a9883f6ca5355f89d1f07f5351467e0a53"
+    },
+    {
+      "path": "Report1.md",
+      "size_bytes": 32077,
+      "sha256": "5070436ddf09e006c6a77db6231b8b7f26b78aade55c1b1085fd811f939275f5"
+    }
+  ]
+}

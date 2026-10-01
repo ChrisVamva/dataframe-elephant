@@ -21,11 +21,11 @@ The parser only links sources by an exact normalized URL or an explicit source l
 
 The current corpus has no claim table with the required explicit claim type and confidence fields, so the first snapshot contains zero claims and zero claim-source mappings. Inline prose references are not converted into claim links. The next curation step is to review unresolved source aliases and add explicit, typed claim/evidence-span rows for the research briefs; do not infer those mappings from surrounding prose.
 
-`source_recurrence` reports appearances by distinct documents and total occurrences. `source_reputation` is a profile of separate recorded dimensions: evidence class (authority proxy), directness, dates, status, documented independence groups, limitations, and recurrence. When the source text does not state a status or directness, those values remain NULL rather than being forced to `unknown`; that preserves the distinction between "not recorded" and "explicitly recorded as unknown." Use `analysis/citation_evaluator.sql` for the initial review queries, including the warning stream and unresolved alias review.
+`source_recurrence` reports appearances by distinct documents and total occurrences. `source_reputation` is a profile of separate recorded dimensions: evidence class (authority proxy), directness, dates, status, documented independence groups, limitations, and recurrence. When the source text does not state a status or directness, those values remain NULL rather than being forced to `unknown`; that preserves the distinction between "not recorded" and "explicitly recorded as unknown." Use ad-hoc DuckDB queries against the databases for the initial review, including the warning stream and unresolved alias review.
 
 ## Stage 2 databases
 
-The typed Stage 2 mirrors are built per `Protocols/FromStagetoDatabases.md` (Option A: one dedicated database per extraction folder, `citations.duckdb` untouched). Inputs are the seven contract files inside each extraction folder:
+The typed Stage 2 mirrors are built per `Rules and Regulations/Protocols/FromStagetoDatabases.md` (Option A: one dedicated database per extraction folder, `citations.duckdb` untouched). Inputs are the seven contract files inside each extraction folder:
 
 ```powershell
 # Extraction 1 (workspace/analysis corpus) -> data/stage2.duckdb

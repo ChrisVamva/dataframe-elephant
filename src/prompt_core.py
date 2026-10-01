@@ -4,12 +4,12 @@ Assembly: resolve ``<!-- include: ... -->`` markers and ``{{var}}`` placeholders
 
 Tier 1 lint rules (see Commander Deck/Active/Plans/OptimalSPrompt.md, section 5):
 
-R1  every include target resolves to a file under ``prompts/``.
+R1  every include target resolves to a partial under ``src/prompt_templates/``.
 R2  no bare gate letters anywhere: qualified IDs only
     (``RE:Gate A``..``RE:Gate F``, ``FU:Gate A``..``FU:Gate D``, ``WB:n``).
-R3  evidence-rule, claim-type, and command blocks live in ``lib/`` only, and
-    the claim-type vocabulary exists in exactly one file
-    (``lib/claim_taxonomy.md``).
+R3  evidence-rule, claim-type, and command blocks live in
+    ``src/prompt_templates/lib/`` only, and the claim-type vocabulary exists in
+    exactly one file (``src/prompt_templates/lib/claim_taxonomy.md``).
 R4  every repo path named in a prompt exists (frontmatter ``inputs``/
     ``partials`` and inline backtick paths); generated artifacts under
     ``data/`` are exempt because they are regenerable and gitignored.
@@ -27,7 +27,7 @@ from pathlib import Path, PurePosixPath
 from typing import Dict, List, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
-PROMPTS_ROOT = ROOT / "prompts"
+TEMPLATES_ROOT = ROOT / "src" / "prompt_templates"
 AGENTS_FILE = ROOT / "AGENTS.md"
 
 INCLUDE_RE = re.compile(r"<!--\s*include:\s*([^\s>]+)\s*-->")
@@ -87,20 +87,20 @@ def parse_frontmatter(text: str) -> Tuple[Dict[str, object], str]:
     return meta, "\n".join(lines[end + 1:])
 
 
-def resolve_includes(text: str, prompts_root: Path = PROMPTS_ROOT,
+def resolve_includes(text: str, templates_root: Path = TEMPLATES_ROOT,
                      stack: Tuple[Path, ...] = ()) -> str:
     """Recursively inline every include target; raise on missing or cyclic."""
 
     def repl(match: "re.Match[str]") -> str:
         rel = match.group(1)
-        target = (prompts_root / rel).resolve()
+        target = (templates_root / rel).resolve()
         if not target.is_file():
             raise FileNotFoundError(f"include target not found: {rel}")
         if target in stack:
             chain = " -> ".join(str(p.name) for p in stack + (target,))
             raise ValueError(f"include cycle: {chain}")
         content = target.read_text(encoding="utf-8")
-        return resolve_includes(content, prompts_root, stack + (target,))
+        return resolve_includes(content, templates_root, stack + (target,))
 
     return INCLUDE_RE.sub(repl, text)
 
@@ -182,13 +182,13 @@ def looks_like_repo_path(span: str) -> bool:
 
 
 def path_exists_in_repo(span: str, root: Path = ROOT) -> bool:
-    """Resolve against the repo root, then against prompts/ (for lib/ etc.)."""
+    """Resolve against the repo root, then against src/prompt_templates/ (for lib/ etc.)."""
     if span.startswith(GENERATED_PREFIXES):
         return True  # regenerable artifacts (duckdb, jsonl) — gitignored
-    return (root / span).exists() or (root / "prompts" / span).exists()
+    return (root / span).exists() or (TEMPLATES_ROOT / span).exists()
 
 
-def check_includes(root: Path = PROMPTS_ROOT) -> List[str]:
+def check_includes(root: Path = TEMPLATES_ROOT) -> List[str]:
     """R1: every include target resolves."""
     violations: List[str] = []
     for file in iter_markdown(root):
@@ -198,7 +198,7 @@ def check_includes(root: Path = PROMPTS_ROOT) -> List[str]:
     return violations
 
 
-def check_bare_gates(root: Path = PROMPTS_ROOT) -> List[str]:
+def check_bare_gates(root: Path = TEMPLATES_ROOT) -> List[str]:
     """R2: no unqualified gate letters."""
     violations: List[str] = []
     for file in iter_markdown(root):
@@ -208,7 +208,7 @@ def check_bare_gates(root: Path = PROMPTS_ROOT) -> List[str]:
     return violations
 
 
-def check_template_purity(root: Path = PROMPTS_ROOT) -> List[str]:
+def check_template_purity(root: Path = TEMPLATES_ROOT) -> List[str]:
     """R3: rule blocks only in lib/, claim vocabulary exactly once."""
     violations: List[str] = []
     templates = root / "templates"
@@ -228,7 +228,7 @@ def check_template_purity(root: Path = PROMPTS_ROOT) -> List[str]:
     return violations
 
 
-def check_paths(root: Path = PROMPTS_ROOT) -> List[str]:
+def check_paths(root: Path = TEMPLATES_ROOT) -> List[str]:
     """R4: frontmatter inputs/partials and inline backtick paths exist."""
     violations: List[str] = []
     for file in iter_markdown(root):
@@ -247,9 +247,9 @@ def check_paths(root: Path = PROMPTS_ROOT) -> List[str]:
     return violations
 
 
-def check_commands(root: Path = PROMPTS_ROOT,
+def check_commands(root: Path = TEMPLATES_ROOT,
                    agents_file: Path = AGENTS_FILE) -> List[str]:
-    """R5: commands in prompts appear verbatim in AGENTS.md."""
+    """R5: commands in templates appear verbatim in AGENTS.md."""
     violations: List[str] = []
     agents = agents_file.read_text(encoding="utf-8")
     for file in iter_markdown(root):
@@ -260,7 +260,7 @@ def check_commands(root: Path = PROMPTS_ROOT,
     return violations
 
 
-def run_all_checks(root: Path = PROMPTS_ROOT) -> List[str]:
+def run_all_checks(root: Path = TEMPLATES_ROOT) -> List[str]:
     """Run R1..R5; returns the combined violation list (empty means clean)."""
     return (check_includes(root) + check_bare_gates(root)
             + check_template_purity(root) + check_paths(root)

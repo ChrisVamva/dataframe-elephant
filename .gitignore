@@ -6,8 +6,9 @@
 __pycache__/
 *.pyc
 scratch/
-prompts/dispatch/*.md
-!prompts/dispatch/README.md
+# Prompt outputs live in research/processed/FollowUps/
+research/processed/FollowUps/*.md
+!research/processed/FollowUps/README.md
 # ECA encrypted containers are derived artifacts (never commit);
 # manifests (*_manifest.json) are the unencrypted audit trail (do commit).
 *.tar.gz.enc

@@ -11,10 +11,12 @@ dataframe-elephant/
 │   ├── raw/
 │   └── processed/
 ├── data/
-├── analysis/
-├── visualizations/
+├── notebooks/
 ├── schemas/
-├── prompts/
+├── scripts/
+├── skills/
+├── Artifacts/
+├── Rules and Regulations/
 └── src/
 ```
 
@@ -22,15 +24,17 @@ dataframe-elephant/
 - **`research/raw/`** – Raw, unprocessed research materials, notes, dumps, scrapes.
 - **`research/processed/`** – Cleaned / summarized research ready for analysis.
 - **`data/`** – Datasets (input / output, snapshots, fixtures).
-- **`analysis/`** – Analysis notebooks, reports, explorations.
-- **`visualizations/`** – Charts, plots, images, dashboards exports.
-- **`schemas/`** – JSON schemas, data contracts, validations, types.
-- **`prompts/`** – Reusable LLM prompts and templates.
+- **`notebooks/`** – Generated analysis notebooks (waves 1, 2, 3).
+- **`schemas/`** – DuckDB schema definitions.
+- **`scripts/`** – CLI wrappers for core operations.
+- **`skills/`** – Agent-executable workflows distilled from protocols.
+- **`Artifacts/`** – Generated artifacts (article ideas, book ideas, software product ideas).
+- **`Rules and Regulations/`** – Governance documents, protocols, and Commander Deck.
 - **`src/`** – Source code.
 
 ## Getting Started
 1. Put raw materials in `research/raw/`
 2. Promote cleaned versions to `research/processed/`
 3. Store datasets in `data/`
-4. Add code to `src/`, analysis to `analysis/`
-5. Export figures to `visualizations/`
+4. Add code to `src/`, notebooks to `notebooks/`
+5. Export figures alongside their notebooks under `notebooks/`

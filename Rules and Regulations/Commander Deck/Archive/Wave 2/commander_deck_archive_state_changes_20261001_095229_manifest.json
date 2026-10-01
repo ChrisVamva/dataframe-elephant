@@ -1,0 +1,30 @@
+{
+  "format": "ECA-v1",
+  "created_utc": "2026-10-01T09:52:29Z",
+  "archive_file": "commander_deck_archive_state_changes_20261001_095229.tar.gz.enc",
+  "source_directory": "C:\\Users\\user\\dataframe-elephant\\Rules and Regulations\\Commander Deck\\State changes\\Archive",
+  "file_count": 3,
+  "total_uncompressed_bytes": 20632,
+  "total_compressed_bytes": 7964,
+  "compression_ratio": 2.59,
+  "verification_status": "VERIFIED_OK",
+  "cipher": "AES-256-GCM",
+  "kdf": "PBKDF2-HMAC-SHA256 (600000 iterations)",
+  "files": [
+    {
+      "path": "28092026OrganisationRenovation.md",
+      "size_bytes": 1831,
+      "sha256": "dd1e95d04911f1e09b0a72643cb87dffddd9ba51a2c2fea1adb2ff18030ee158"
+    },
+    {
+      "path": "28092026Ostate_project_report.md",
+      "size_bytes": 8554,
+      "sha256": "9f47843750d48a9b52924fb0e824a4b82c228ec7e2499a58fc90c04aabee36b2"
+    },
+    {
+      "path": "28092026Report.md",
+      "size_bytes": 10247,
+      "sha256": "2c957f439aa1d66a309b6e9b68dac36fe6bb0b2bfb9994f8dcc1ec5ea10f0076"
+    }
+  ]
+}

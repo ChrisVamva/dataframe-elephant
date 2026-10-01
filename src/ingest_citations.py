@@ -931,10 +931,6 @@ def build_database(
     warnings_path.parent.mkdir(parents=True, exist_ok=True)
     temp_database_path = database_path.with_name(f"{database_path.stem}.tmp{database_path.suffix}")
     candidate_roots = [raw_dir]
-    if raw_dir.is_relative_to(ROOT):
-        analysis_root = ROOT / "analysis"
-        if analysis_root.exists():
-            candidate_roots.append(analysis_root)
     documents = sorted(
         {path for root in candidate_roots for path in root.rglob("*.md")},
         key=lambda path: path.relative_to(ROOT).as_posix().casefold() if path.is_relative_to(ROOT) else path.as_posix().casefold(),

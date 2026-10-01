@@ -236,7 +236,7 @@ def test_first_ratings_file_is_ingested_as_internal_evaluation(tmp_path: Path, m
     raw_dir = tmp_path / "raw"
     raw_dir.mkdir()
     (raw_dir / "brief.md").write_text("# Brief\n\n| ID | Source | URL | Classification |\n|---|---|---|---|\n| S1 | Example docs | https://example.org/docs/x | Primary |\n", encoding="utf-8")
-    analysis_dir = tmp_path / "analysis" / "On Research"
+    analysis_dir = raw_dir / "On Research"
     analysis_dir.mkdir(parents=True)
     (analysis_dir / "First-Ratings.md").write_text(
         "# First Ratings\n\n**Decision:** **Revise.**\n**Evaluation date:** 2026-09-27\n**Quality rating:** **Moderate**\n",
@@ -252,7 +252,7 @@ def test_first_ratings_file_is_ingested_as_internal_evaluation(tmp_path: Path, m
         row = connection.execute(
             "SELECT path, is_internal, evaluation_decision, quality_rating FROM research_document WHERE path LIKE '%First-Ratings.md'"
         ).fetchone()
-        assert row == ("analysis/On Research/First-Ratings.md", True, "revise", "Moderate")
+        assert row == ("raw/On Research/First-Ratings.md", True, "revise", "Moderate")
     finally:
         connection.close()
 

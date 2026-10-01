@@ -24,7 +24,7 @@ absence of change — it is change that leaves no stale twin behind.
 | # | Failure that actually happened | Where it is recorded | Cost |
 | --- | --- | --- | --- |
 | F1 | **Gate-identity collision.** Two protocols use bare letters A–F / A–D with different meanings; prompts invented their own "Gate A–E" while claiming protocol provenance ("Gate E falsification" — no such gate exists). | `Protocols/Research-Evaluation.md` §4 vs `Protocols/FollowUpResearch.md` §6 vs the former dispatch prompts | Agents self-checked against the wrong bar; "verified" dossiers were unverifiable |
-| F2 | **Rule triplication.** Evidence rules, the claim taxonomy, and verification commands were copy-pasted across three prompts and `AGENTS.md`, and the copies drifted (gate names and test commands already disagreed). | Former `Commander Deck/Active/prompts/*` | Editing one copy left the others lying; nobody could say which text was authoritative |
+| F2 | **Rule triplication.** Evidence rules, the claim taxonomy, and verification commands were copy-pasted across three prompts and `AGENTS.md`, and the copies drifted (gate names and test commands already disagreed). | Former `scripts/assemble_prompt.py` | Editing one copy left the others lying; nobody could say which text was authoritative |
 | F3 | **Frozen dispatch data.** RQ tables, scores, URLs, and the `doc_cbce9d82fff1c44cb45a5063` hash were hand-copied into prompts while `scripts/formulate_research_questions.py` regenerates exactly that data. An agent once web-searched the local doc hash and stalled. | Former `NextResearchPrompt.md` §2 ("Why the Previous Prompt Failed") | Prompts silently contradict the agenda; sessions waste turns on dead ends |
 | F4 | **Dead references.** Bare filenames (`Wave2_Entity_Boundaries.md`) with no path, and links to files that no longer exist. | Former `FollowUpPrompt.md` inputs list | Agents cannot find inputs; they improvise or stall |
 | F5 | **Unmeasured prompt edits.** Prompt "improvements" were accepted with no lint and no golden set — failures were only diagnosed after the fact, in prose. | Same §2 table above | Regression roulette; every wave re-learned the same lesson |
@@ -39,25 +39,26 @@ to the separate check set implemented in `src/prompt_core.py` and is always
 cited together with its checker function name.
 
 **R1 — Protocols own the rules.** Evidence rules, claim taxonomy, confidence
-rubric, and gate definitions live only in `Protocols/*.md`. Prompts *cite*
+rubric, and gate definitions live only in `Protocols/*.md`. Prompt templates
+(`src/prompt_templates/`) *cite*
 (`Protocols/Research-Evaluation.md` §2–§5) and may carry at most a short
 reminder. Prevents: F2. Enforced by: lint R3 (`check_template_purity`).
 
 **R2 — Gate IDs are always qualified.** Write `RE:Gate A`..`RE:Gate F`
 (`Protocols/Research-Evaluation.md` §4), `FU:Gate A`..`FU:Gate D`
 (`Protocols/FollowUpResearch.md` §6), `WB:n` (write-back checklist). Bare
-letters are forbidden in every file under `prompts/`. Prevents: F1.
+letters are forbidden in every template under `src/prompt_templates/`. Prevents: F1.
 Enforced by: lint R2 (`check_bare_gates`).
 
-**R3 — One copy under `prompts/`.** `lib/evidence_rules.md`,
+**R3 — One copy of each shared block.** `lib/evidence_rules.md`,
 `lib/claim_taxonomy.md`, and `lib/verification.md` are the only places those
 blocks exist. Templates get them via include markers, never by copy-paste; the
 claim-type vocabulary must appear in exactly one file. Prevents: F2.
 Enforced by: lint R1+R3 (include resolution, purity, vocabulary uniqueness).
 
 **R4 — Commands change in `AGENTS.md` first.** Any interpreter command quoted
-under `prompts/` must appear verbatim in `AGENTS.md` (interpreter + script
-path). Change AGENTS.md, mirror into `lib/verification.md`, then run the suite.
+under `src/prompt_core.py` must appear verbatim in `AGENTS.md` (interpreter + script
+path). Change AGENTS.md, mirror into `src/prompt_templates/lib/verification.md`, then run the suite.
 Prevents: drifted test/import commands. Enforced by: lint R5
 (`check_commands`).
 
@@ -68,7 +69,7 @@ Prevents: F4. Enforced by: lint R4 (`check_paths`).
 
 **R6 — Dispatch data is assembled, never hand-copied.** Session prompts are
 produced by `scripts/assemble_prompt.py` from the template plus
-`ResearchAgenda.md`/DuckDB state, written to `prompts/dispatch/`. RQ tables,
+`ResearchAgenda.md`/DuckDB state, written to `research/processed/FollowUps/`. RQ tables,
 scores, aliases, and doc hashes are never pasted into a template by hand.
 Prevents: F3. Enforced by: process (templates carry no session numbers) plus
 R4/R5 catching the fallout when they do.
@@ -80,12 +81,12 @@ Enforced by: this rule itself; session discipline in `AGENTS.md`.
 
 **R8 — Version and archive; never delete.** Templates and partials carry
 frontmatter `id`/`version`/`status`. Superseded versions move to
-`prompts/archive/` with their date; history is never silently overwritten
+`research/processed/FollowUps/archive/` with their date; history is never silently overwritten
 (same principle as `Protocols/Research-Evaluation.md` §9). Prevents: F5 and
 "when did this change?". Enforced by: review.
 
 **R9 — Protocol first, mirror second.** To change a rule: edit the protocol,
-then mirror into the `lib/` partial, then run the suite. Never fork new rule
+then mirror into the `src/prompt_templates/lib/` partial, then run the suite. Never fork new rule
 text into a template to get a session moving. Prevents: F1, F2. Enforced by:
 lint R3 (the fork fails purity) and review.
 
@@ -105,19 +106,19 @@ stay scoped to `research/raw/.*\.md`. Prevents: F6. Enforced by:
 tests.
 
 **R12 — Derived artifacts stay generated.** `*.duckdb`, `*.jsonl`, `.env`, and
-`prompts/dispatch/*.md` are gitignored and regenerable. Never commit them,
+`research/processed/FollowUps/*.md` are gitignored and regenerable. Never commit them,
 never hand-edit them to "fix" output — fix the source and regenerate.
 Prevents: F3, F6. Enforced by: `.gitignore` and review.
 
 ## 4. The working loop (every session)
 
-1. **Edit the library, not the deck.** Change `prompts/templates/` or
-   `prompts/lib/`; `Commander Deck/Active/prompts/` holds only stubs and
-   pointers (see its `README.md`).
+1. **Edit the source, not the output.** Change the templates in
+   `src/prompt_templates/` or the CLI in `scripts/assemble_prompt.py`;
+   dispatch outputs are generated, never hand-edited.
 2. **Run the suite:** `.\.venv\Scripts\python.exe -m pytest src/tests -q`.
    The lint checks (`check_includes` … `check_commands`) are inside it.
 3. **Assemble dispatches:**
-   `.\.venv\Scripts\python.exe scripts/assemble_prompt.py --template <id> --out prompts/dispatch/<date>_<wave>.md`.
+   `.\.venv\Scripts\python.exe scripts/assemble_prompt.py --template <id> --out research/processed/FollowUps/<date>_<wave>.md`.
 4. **Bump `version`, archive the superseded file** when a template changes.
 5. **Record what happened** in `Commander Deck/Active/State changes/` — state,
    not prompt copies.

@@ -19,10 +19,10 @@ Silent investigation findings: (1) Stage 1 Wave 1 archive is healthy — 13/13 f
 - `scripts/restore_archive.py`: keep crypto; update `--dest` help for Commander Deck; optional `--json` for `--list`.
 - `Rules and Regulations/Protocols/Encryption-Compression-Archiving.md`: parameterize Wave-1 paths; add 4.10 Commander Deck profile; add 5.3 interrogation-without-restore.
 - `Protocols/` vs `Rules and Regulations/Protocols/`: canonicalize to one location (duplicate caused 22 check_paths failures).
-- `prompts/**`: fix bare `Protocols/...` refs to canonical path. `.gitignore`: keep ignoring `*.tar.gz.enc`, allow manifests. `AGENTS.md`: add Commander Deck examples.
+- `src/prompt_templates/**`: fix bare `Protocols/...` refs to canonical path. `.gitignore`: keep ignoring `*.tar.gz.enc`, allow manifests. `AGENTS.md`: add Commander Deck examples.
 
 ## Files (part 3 - delete/config)
-- Delete: none by hand (archiver deletes only after verified roundtrip). Config: reuse `.env` ARCHIVE_PASSPHRASE.
+- Delete: none by hand (archiver deletes only after verified roundtrip). Config: reuse the `ARCHIVE_PASSPHRASE` environment variable (`.env` holds no secrets).
 
 ## Functions
 - New: none (optional `scripts/archive_commander_deck.py:main()` wrapper).

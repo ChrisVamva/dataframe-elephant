@@ -78,7 +78,7 @@ warnings:            N
 
 ### Step 1: File Discovery
 
-The pipeline scans `research/raw/` recursively for all `.md` files. It also scans `analysis/` for `First-Ratings.md` if that directory exists. Files are sorted by workspace-relative path, case-folded, so processing order is deterministic across operating systems.
+The pipeline scans `research/raw/` recursively for all `.md` files. Files are sorted by workspace-relative path, case-folded, so processing order is deterministic across operating systems.
 
 For each discovered file, the pipeline records:
 

@@ -42,7 +42,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 NOTEBOOK_ROOT = ROOT / "notebooks"
-WAVES = ("1", "2")
+WAVES = ("1", "2", "3")
 WAVE_DIRS = {wave: NOTEBOOK_ROOT / wave for wave in WAVES}
 
 # Shared bootstrap: the notebooks must run from any working directory, so the
@@ -1201,6 +1201,9 @@ def wave_specs(wave: str) -> list[dict]:
         import wave2_notebook_specs
 
         return wave2_notebook_specs.WAVE2_SPECS
+    if wave == "3":
+        import wave3_notebook_specs
+        return wave3_notebook_specs.WAVE3_SPECS
     raise ValueError(f"unknown wave: {wave!r}; expected one of {WAVES}")
 
 

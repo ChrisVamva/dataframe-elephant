@@ -95,9 +95,9 @@ def test_r4_all_referenced_paths_exist():
 
 def test_r4_path_heuristics():
     assert looks_like_repo_path("research/raw/Stage 2/Entities.md")
-    assert looks_like_repo_path("prompts/lib/")
+    assert looks_like_repo_path("src/prompt_core.py")
     assert not looks_like_repo_path("Wave2_Entity_Boundaries.md")  # bare name
-    assert not looks_like_repo_path("prompts/dispatch/<date>_wave.md")  # placeholder
+    assert not looks_like_repo_path("research/processed/FollowUps/<date>_wave.md")  # placeholder
     assert not looks_like_repo_path("https://example.com/docs")  # URL
     assert not looks_like_repo_path(r".venv\Scripts\python.exe")  # command
 

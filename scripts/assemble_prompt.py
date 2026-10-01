@@ -3,7 +3,7 @@
 Thin CLI over src/prompt_core.py. Examples (run from the repo root):
 
   .venv\\Scripts\\python.exe scripts/assemble_prompt.py --template research_brief
-  .venv\\Scripts\\python.exe scripts/assemble_prompt.py --template followup_dispatch --out prompts/dispatch/2026-09-28_wave2.md
+  .venv\\Scripts\\python.exe scripts/assemble_prompt.py --template followup_dispatch --out research/processed/FollowUps/2026-09-28_wave2.md
   .venv\\Scripts\\python.exe scripts/assemble_prompt.py --template next_research --var wave=Wave2
 """
 
@@ -20,7 +20,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.prompt_core import (  # noqa: E402
-    PROMPTS_ROOT,
+    TEMPLATES_ROOT,
     PromptRenderError,
     render,
     resolve_includes,
@@ -48,7 +48,7 @@ def resolve_template(template: str) -> Path:
     direct = Path(template)
     if direct.is_file():
         return direct
-    candidate = PROMPTS_ROOT / "templates" / f"{template}.md"
+    candidate = TEMPLATES_ROOT / "templates" / f"{template}.md"
     if candidate.is_file():
         return candidate
     raise FileNotFoundError(
@@ -66,7 +66,7 @@ def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Assemble a prompt template into a dispatch-ready prompt.")
     parser.add_argument("--template", required=True,
-                        help="template id under prompts/templates/ or a .md path")
+                        help="template id in src/prompt_core.py or a .md path")
     parser.add_argument("--var", action="append", default=[], metavar="NAME=VALUE",
                         help="template variable (repeatable)")
     parser.add_argument("--context", metavar="FILE",
