@@ -155,7 +155,7 @@ fig = go.Figure(go.Heatmap(
     colorscale=[[0.0,"#e8b6bb"],[0.5,"#f3e2b8"],[1.0,"#bcd9c4"]],
     text=_texts,
     texttemplate="%{text}",
-    customdata=[[[f"{cid}: {READINGS[cid][1]}" if cid in READINGS else "" for cid in ["C009","C010","C011","C012","C013","C014","C015","C016"]] for _ in CAPS]]],
+    customdata=[[f"{cid}: {READINGS[cid][1]}" if cid in READINGS else "" for cid in ["C009","C010","C011","C012","C013","C014","C015","C016"]] for _ in CAPS],
     hovertemplate="%{customdata}<extra></extra>",
 ))
 fig.update_layout(
@@ -243,6 +243,29 @@ display(HTML("<h4>Incident-related metrics (selected)</h4>"))
 _inc = viz.metrics_by_id(["M52","M53","M54","M55","M56","M58","M59","M60"])
 show(_inc[["local_id","metric_name","value","unit","confidence"]].rename(
     columns={"local_id":"m","metric_name":"name","confidence":"conf"}))
+
+# Rates share one unit (percent), so they chart on one axis. Stated ranges
+# are spanned via bar base (30->50, 70->75), never averaged into a midpoint.
+RATES = [
+    ("Human review rate (M36)", 0, 20, "20%", "medium"),
+    ("Retry rate (M37)", 0, 15, "15%", "medium"),
+    ("RPA project failure rate (M58)", 30, 20, "30-50%", "medium"),
+    ("RPA maintenance budget share (M59)", 70, 5, "70-75%", "medium"),
+]
+fig = go.Figure(go.Bar(
+    y=[r[0] for r in RATES],
+    base=[r[1] for r in RATES],
+    x=[r[2] for r in RATES],
+    orientation="h",
+    text=[r[3] for r in RATES],
+    textposition="outside",
+    marker_color=[viz.CONFIDENCE_COLORS[r[4]] for r in RATES],
+))
+fig.update_layout(
+    title="Operational failure and labor rates (%, as stated; ranges spanned, not averaged)",
+    xaxis_title="percent",
+    height=320)
+fig.show()
 ''',
     uncertainty_md=(
         "### Incident claim limitations\n\n"
@@ -262,7 +285,8 @@ show(claims.loc[claims["local_id"].isin(_patterns),
 ''' + _UNCERTAINTY_COMMON,
     reproducibility=(
         "Incident-to-metric links are authored from source references (S25-S29); claim text from `viz.fetch_claims`; "
-        "metrics from `viz.metrics_by_id`. The mapping table prints both the claim id and the metric id for audit."
+        "metrics from `viz.metrics_by_id`. The mapping table prints both the claim id and the metric id for audit. "
+        "The rate figure charts M36, M37, M58, M59 as stated (ranges spanned via bar base, not averaged)."
     ),
 )
 

@@ -46,6 +46,12 @@ PRODUCTION_DATABASES: dict[str, dict[str, str]] = {
         "warnings": "data/AutomationResearch_ingestion_warnings.jsonl",
         "run_table": "stage2_run",
     },
+    "fusionenergy": {
+        "database": "data/fusion_energy.duckdb",
+        "schema": "schemas/stage2.sql",
+        "warnings": "data/fusion_energy_ingestion_warnings.jsonl",
+        "run_table": "stage2_run",
+    },
 }
 
 EXPORT_FORMATS = ("csv", "parquet")

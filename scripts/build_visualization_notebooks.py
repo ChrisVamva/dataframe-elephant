@@ -45,9 +45,20 @@ NOTEBOOK_ROOT = ROOT / "notebooks"
 WAVES = ("1", "2", "3")
 WAVE_DIRS = {wave: NOTEBOOK_ROOT / wave for wave in WAVES}
 
+# Option A topology (Protocols/FromStagetoDatabases.md): one dedicated Stage 2
+# database per extraction. Waves 1-2 draw on the Smart Homes extraction
+# (Extraction 2); wave 3 draws on the Automation Market Research extraction
+# (Extraction 3). Each notebook's bootstrap points viz_core at its wave's file.
+WAVE_DATABASES = {
+    "1": "smarthome.duckdb",
+    "2": "smarthome.duckdb",
+    "3": "AutomationResearch.duckdb",
+}
+
 # Shared bootstrap: the notebooks must run from any working directory, so the
 # repo root is located from this file rather than from the launch cwd.
 BOOTSTRAP = '''\
+import os
 import sys
 from pathlib import Path
 
@@ -70,6 +81,11 @@ else:  # pragma: no cover - only reachable outside a checkout
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+# Option A topology: this wave reads one dedicated Stage 2 database. Point
+# viz_core at it before import -- it resolves the path once at import time --
+# so every fetch in this kernel uses the same file.
+os.environ["SMARTHOME_DB"] = str(ROOT / "data" / "__DB_NAME__")
+
 import viz_core as viz  # noqa: E402
 
 pd.set_option("display.max_colwidth", 90)
@@ -84,9 +100,9 @@ pd.set_option("display.width", 160)
 # asserts on.
 pio.renderers.default = "plotly_mimetype+notebook"
 
-# Every figure in these notebooks reads only from data/smarthome.duckdb.
+# Every figure in this notebook reads only from data/__DB_NAME__ (read-only).
 CLAIM_IDS = __CLAIM_IDS__
-assert viz.DEFAULT_DB_PATH.endswith("smarthome.duckdb"), viz.DEFAULT_DB_PATH
+assert viz.DEFAULT_DB_PATH.endswith("__DB_NAME__"), viz.DEFAULT_DB_PATH
 
 claims = viz.fetch_claims(list(CLAIM_IDS))
 sources = viz.sources_for_claims(list(CLAIM_IDS)) if CLAIM_IDS else pd.DataFrame()
@@ -128,10 +144,12 @@ def confidence_legend():
 '''
 
 
-def _bootstrap_cell(claim_ids: list[str]) -> str:
+def _bootstrap_cell(claim_ids: list[str], database: str) -> str:
     # The bootstrap contains f-string braces, so it is substituted by token
     # rather than str.format (which would try to interpret every dict literal).
-    return BOOTSTRAP.replace("__CLAIM_IDS__", repr(tuple(claim_ids)))
+    return (BOOTSTRAP
+            .replace("__CLAIM_IDS__", repr(tuple(claim_ids)))
+            .replace("__DB_NAME__", database))
 
 
 def _md(source: str) -> nbformat.NotebookNode:
@@ -155,6 +173,7 @@ def build_notebook(
     uncertainty_md: str,
     uncertainty_code: str,
     reproducibility: str,
+    database: str = "smarthome.duckdb",
 ) -> nbformat.NotebookNode:
     """Assemble one notebook from the shared cell contract."""
     nb = nbformat.v4.new_notebook()
@@ -162,10 +181,10 @@ def build_notebook(
         _md(f"# {title}"),        _md(
             "**Claim cluster:** "
             + ", ".join(f"`{cid}`" for cid in claim_ids)
-            + "  \n**Source of truth:** `data/smarthome.duckdb` (read-only), via "
+            + f"  \n**Source of truth:** `data/{database}` (read-only), via "
             "`src/viz_core.py`"
         ),
-        _code(_bootstrap_cell(claim_ids)),
+        _code(_bootstrap_cell(claim_ids, database)),
         _md("## Provenance"),
         _md(provenance_intro),
         _code(
@@ -1203,7 +1222,8 @@ def wave_specs(wave: str) -> list[dict]:
         return wave2_notebook_specs.WAVE2_SPECS
     if wave == "3":
         import wave3_notebook_specs
-        return wave3_notebook_specs.WAVE3_SPECS
+        return [dict(spec, database=WAVE_DATABASES["3"])
+                for spec in wave3_notebook_specs.WAVE3_SPECS]
     raise ValueError(f"unknown wave: {wave!r}; expected one of {WAVES}")
 
 

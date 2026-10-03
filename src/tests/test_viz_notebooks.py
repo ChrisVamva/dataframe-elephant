@@ -2,22 +2,23 @@
 
 These notebooks are the deliverable of the visualization work, so the gate is
 the same as the export gate: build them from
-``scripts/build_visualization_notebooks.py``, execute every one against
-``data/smarthome.duckdb`` in a real Jupyter kernel, and fail on any error
+``scripts/build_visualization_notebooks.py``, execute every one against its
+wave's Stage 2 database in a real Jupyter kernel, and fail on any error
 output. Also asserts three things about provenance that a hand edit could
 otherwise break:
 
 * the notebooks on disk match the generator cell for cell, so a hand edit
   cannot silently diverge from the claim ids the generator declares;
-* every claim id a spec declares exists in the database;
-* every ``M###`` id mentioned anywhere in a notebook (code or prose) exists in
-  the metric table.
+* every claim id a spec declares exists in the wave's database;
+* every metric id mentioned anywhere in a notebook (code or prose) exists in
+  the metric table of the wave's database.
 
 Run just these:
     .\\.venv\\Scripts\\python.exe -m pytest src/tests/test_viz_notebooks.py -q
 """
 from __future__ import annotations
 
+import duckdb
 import re
 import sys
 from pathlib import Path
@@ -46,25 +47,29 @@ HEADINGS = [
     "## Reproducibility",
 ]
 
-# Local ids as they appear in the corpus: M001 for metrics.
-METRIC_ID_RE = re.compile(r"\bM\d{3}\b")
+# Metric local-id spellings differ per extraction: Extraction 2 (waves 1-2)
+# zero-pads to three digits (M001), Extraction 3 (wave 3) does not (M1-M100).
+METRIC_ID_RES = {
+    "1": re.compile(r"\bM\d{3}\b"),
+    "2": re.compile(r"\bM\d{3}\b"),
+    "3": re.compile(r"\bM\d{1,3}\b"),
+}
 
 
 def _notebook_path(wave: str, name: str) -> Path:
     return builder.notebook_dir(wave) / f"{name}.ipynb"
 
 
-def _requires_database() -> None:
-    if not (ROOT / "data" / "smarthome.duckdb").exists():
-        pytest.skip("data/smarthome.duckdb not present; run the Extraction 2 import")
+def _requires_database(wave: str) -> None:
+    database = builder.WAVE_DATABASES[wave]
+    if not (ROOT / "data" / database).exists():
+        pytest.skip(f"data/{database} not present; run the Stage 2 import")
 
 
-def _existing_local_ids(table: str, ids: list[str]) -> set[str]:
-    import viz_core as viz
-
+def _existing_local_ids(table: str, ids: list[str], database: str) -> set[str]:
     if not ids:
         return set()
-    con = viz.connect_db()
+    con = duckdb.connect(str(ROOT / "data" / database), read_only=True)
     try:
         return {
             row[0] for row in con.execute(
@@ -119,7 +124,7 @@ def test_notebook_structure(wave: str, name: str, spec: dict) -> None:
 
 @pytest.mark.parametrize("wave,name,spec", CASES, ids=CASE_IDS)
 def test_notebook_executes_headless(wave: str, name: str, spec: dict) -> None:
-    _requires_database()
+    _requires_database(wave)
     import nbclient  # noqa: F401  (import asserts the execution stack is installed)
     from nbclient import NotebookClient
 
@@ -162,32 +167,33 @@ def test_generator_check_mode_passes_per_wave(wave: str) -> None:
 
 @pytest.mark.parametrize("wave", WAVES)
 def test_generator_declares_known_claims(wave: str) -> None:
-    """Every claim id the notebooks read must exist in the real database."""
-    _requires_database()
+    """Every claim id the notebooks read must exist in the wave's database."""
+    _requires_database(wave)
+    database = builder.WAVE_DATABASES[wave]
     declared = {cid for spec in builder.wave_specs(wave) for cid in spec["claim_ids"]}
     assert declared, f"no claim ids declared for wave {wave}"
-    assert _existing_local_ids("stage2_claim", sorted(declared)) == declared, (
-        f"wave {wave} unknown claim ids: "
-        f"{sorted(declared - _existing_local_ids('stage2_claim', sorted(declared)))}"
-    )
+    missing = declared - _existing_local_ids(
+        "stage2_claim", sorted(declared), database)
+    assert not missing, f"wave {wave} unknown claim ids: {sorted(missing)}"
 
 
 @pytest.mark.parametrize("wave,name,spec", CASES, ids=CASE_IDS)
 def test_referenced_metric_ids_exist(wave: str, name: str, spec: dict) -> None:
-    """Every ``M###`` mentioned in a notebook must exist in the metric table.
+    """Every metric id mentioned in a notebook must exist in the wave's database.
 
     The generator declares claim ids, but metric ids live inside the code and
     prose of each spec, where a typo would otherwise only surface as an empty
     dataframe at run time.
     """
-    _requires_database()
+    _requires_database(wave)
     nb = nbformat.read(str(_notebook_path(wave, name)), as_version=4)
-    referenced = set(METRIC_ID_RE.findall(
+    referenced = set(METRIC_ID_RES[wave].findall(
         "\n".join(cell.source for cell in nb.cells)
     ))
     if not referenced:
         pytest.skip(f"{name} references no metric ids")
-    found = _existing_local_ids("metric", sorted(referenced))
+    found = _existing_local_ids(
+        "metric", sorted(referenced), builder.WAVE_DATABASES[wave])
     assert found == referenced, (
         f"{name}: unknown metric ids {sorted(referenced - found)}"
     )
