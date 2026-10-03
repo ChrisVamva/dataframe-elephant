@@ -25,15 +25,18 @@ def check_database(db_path: str, expected_tables: set[str]) -> bool:
     finally:
         con.close()
 
-def main():
+def main() -> bool:
+    """Run all checks and return True only if every check passed."""
+    results: list[bool] = []
     print("=== Repository Health Check ===\n")
 
-    # Check databases
+    # Check databases (citations.duckdb uses the singular names defined in
+    # schemas/citations.sql: claim, source, claim_source -- no metrics table).
     print("Databases:")
-    check_database("data/citations.duckdb", {"claims", "sources", "metrics"})
-    check_database("data/smarthome.duckdb", {"stage2_claim", "metric", "entity"})
-    check_database("data/stage2.duckdb", {"stage2_claim"})
-    check_database("data/AutomationResearch.duckdb", {"stage2_claim"})
+    results.append(check_database("data/citations.duckdb", {"claim", "source", "claim_source"}))
+    results.append(check_database("data/smarthome.duckdb", {"stage2_claim", "metric", "entity"}))
+    results.append(check_database("data/stage2.duckdb", {"stage2_claim"}))
+    results.append(check_database("data/AutomationResearch.duckdb", {"stage2_claim"}))
 
     # Check schemas
     print("\nSchemas:")
@@ -42,6 +45,7 @@ def main():
             print(f"OK: {schema}")
         else:
             print(f"FAIL: {schema} not found")
+            results.append(False)
 
     # Check AGENTS.md
     print("\nDocumentation:")
@@ -49,8 +53,10 @@ def main():
         print("OK: AGENTS.md")
     else:
         print("FAIL: AGENTS.md not found")
+        results.append(False)
 
     print("\n=== Health Check Complete ===")
+    return all(results)
 
 if __name__ == "__main__":
     sys.exit(0 if main() else 1)

@@ -9,7 +9,7 @@
 ### Core Modules (`src/`)
 - **`viz_core.py`** – Shared visualization library for SmartHome analysis notebooks. Handles claim fetching, metric retrieval, entity lookup, and provenance rendering.
 - **`stage2_import_core.py`** – Stages 2 extraction (research/raw/Stage 2/Extraction 1/2) into DuckDB. Uses `SMARTHOME_DB` environment variable pointing to `data/smarthome.duckdb`.
-- **`ingest_citations.py`** – Parses Markdown tables in research documents to build citation databases (claims, sources, metrics).
+- **`ingest_citations.py`** – Parses Markdown tables in research documents to build the citation database (`claim`, `source`, `claim_source` and related tables per `schemas/citations.sql`).
 - **`db_export_core.py`** – Exports staged data to CSV/Parquet bundles with verification roundtrips.
 - **`archive_core.py`** – Encrypts and packages datasets as ECA (Encrypted Archive Containers) using AES-256-GCM + PBKDF2-HMAC-SHA256 (600k iterations).
 - **`followup_core.py`** – Generates research agendas and follow-up questions from gaps in the dataset.
@@ -26,6 +26,7 @@
 - **`restore_archive.py`** – Restores archived datasets.
 - **`build_visualization_notebooks.py`** – Generates the notebook catalogue in waves: the cell contract, the bootstrap cell and wave 1's specs live here, wave 2's specs are imported from `wave2_notebook_specs.py`, and wave 3's specs from `wave3_notebook_specs.py`.
 - **`wave2_notebook_specs.py`** – Spec dicts for `notebooks/2/`: claim clusters, metric ids and every code cell, importing the shared cell contract from the builder.
+- **`health_check.py`** – Quick repository health check: verifies the DuckDB databases contain their expected tables and that key schemas/docs exist. Exits non-zero if any check fails.
 
 ### Configuration & Build
 - **Dependencies** – All in `requirements.txt` (12 pinned-range packages: duckdb, pandas, plotly, altair, ipywidgets, cryptography, pytest, hypothesis, jupyter, nbformat, nbconvert, ipykernel).
