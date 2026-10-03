@@ -18,3 +18,8 @@ data/exports/
 # Kilo session state and managed worktrees (never commit).
 .kilo/
 
+
+# ZCode session state (never commit).
+.zcode/
+# LibreOffice lock files (never commit).
+.~lock.*#
