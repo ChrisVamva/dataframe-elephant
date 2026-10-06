@@ -23,3 +23,10 @@ data/exports/
 .zcode/
 # LibreOffice lock files (never commit).
 .~lock.*#
+
+# Commander session logs (never commit).
+commander/logs/
+# Telemetry export snapshots are derived from telemetry.duckdb (append-only,
+# regenerable) — never commit; keep the README that documents the folder.
+Rules and Regulations/Commander Deck/Telemetry/exports/*
+!Rules and Regulations/Commander Deck/Telemetry/exports/README.md

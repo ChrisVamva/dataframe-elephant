@@ -1,0 +1,16 @@
+{
+  "places": {
+    "RP": {"path": "Rules and Regulations/Protocols", "desc": "Protocols - read and follow before acting"},
+    "RR": {"path": "Rules and Regulations", "desc": "Rules and Regulations root"},
+    "DATA": {"path": "data", "desc": "Databases"},
+    "SCRATCH": {"path": "scratch", "desc": "Throwaway files and tests"},
+    "DE": {"path": ".", "desc": "dataframe-elephant project root"},
+    "CODE": {"path": "C:/Users/user/Documents/Obsidian Vaults/Code", "desc": "Code vault"},
+    "TD": {"path": "C:/Users/user/Documents/Obsidian Vaults/TODO/Core", "desc": "TODO/Core command vault"}
+  },
+  "kinds": {
+    "py": {"ext": ".py", "template": "script.py"},
+    "md": {"ext": ".md", "template": "note.md"},
+    "duckdb": {"ext": ".duckdb", "template": null}
+  }
+}
