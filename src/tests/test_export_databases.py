@@ -105,15 +105,19 @@ def test_verify_detects_schema_mismatch(tmp_path: Path) -> None:
 
 def test_production_registry_covers_every_stage2_extraction() -> None:
     """Option A: one registered database per Stage 2 extraction folder."""
-    assert set(PRODUCTION_DATABASES) == {"citations", "stage2", "smarthome", "automationresearch", "fusionenergy"}
+    assert set(PRODUCTION_DATABASES) == {
+        "citations", "stage2", "smarthome", "automationresearch", "fusionenergy", "semiconductors"
+    }
 
     extractions = sorted(
         p.name for p in (ROOT / "research" / "raw" / "Stage 2").iterdir() if p.is_dir()
     )
-    assert extractions == ["Extraction 1", "Extraction 2", "Extraction 3", "Fusion Energy"]
+    assert extractions == [
+        "Extraction 1", "Extraction 2", "Extraction 3", "Extraction 5", "Extraction 6"
+    ]
 
     shared_schema = (ROOT / "schemas" / "stage2.sql").read_text(encoding="utf-8")
-    for name in ("stage2", "smarthome", "automationresearch", "fusionenergy"):
+    for name in ("stage2", "smarthome", "automationresearch", "fusionenergy", "semiconductors"):
         spec = PRODUCTION_DATABASES[name]
         assert (ROOT / spec["database"]).is_file(), spec["database"]
         assert (ROOT / spec["warnings"]).is_file(), spec["warnings"]

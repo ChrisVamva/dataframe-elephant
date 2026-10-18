@@ -40,7 +40,7 @@ SPAN_RE = re.compile(r"`([^`\n]+)`")
 CLAIM_PAIR = ("documented fact", "reported signal")
 CLAIM_VOCAB_FILE = "lib/claim_taxonomy.md"
 FORBIDDEN_IN_TEMPLATES = ("Prefer primary sources", "Tier 1 (Primary")
-GENERATED_PREFIXES = ("data/",)
+GENERATED_PREFIXES = ("data/", "research/processed/FollowUps/")
 PATH_SUFFIXES = {".md", ".py", ".sql", ".json", ".jsonl", ".txt", ".yaml", ".yml", ".toml", ".ini"}
 PLACEHOLDER_CHARS = set("<>{}*[]|+,")
 
@@ -184,7 +184,7 @@ def looks_like_repo_path(span: str) -> bool:
 def path_exists_in_repo(span: str, root: Path = ROOT) -> bool:
     """Resolve against the repo root, then against src/prompt_templates/ (for lib/ etc.)."""
     if span.startswith(GENERATED_PREFIXES):
-        return True  # regenerable artifacts (duckdb, jsonl) — gitignored
+        return True  # regenerable artifacts (duckdb, jsonl, prompt outputs) — gitignored
     return (root / span).exists() or (TEMPLATES_ROOT / span).exists()
 
 
