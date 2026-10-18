@@ -39,12 +39,15 @@ an amendment.
 | Document | Status | Scope |
 | --- | --- | --- |
 | [AuthorityDocumentCreation.md](Protocols/AuthorityDocumentCreation.md) | Mandatory per document | Creation and maintenance of folder-level authority documents. |
+| [BrainstormReadability.md](Protocols/BrainstormReadability.md) | Mandatory per document | How a brainstorm report must read; six-check self-check before the file is saved. |
 | [Encryption-Compression-Archiving.md](Protocols/Encryption-Compression-Archiving.md) | Mandatory per document | Lossless encrypted archive and restore workflow. |
 | [ExportDatabase.md](Protocols/ExportDatabase.md) | Mandatory per export | Read-only CSV/Parquet export of the production DuckDB databases, with restoration and fidelity verification. |
 | [FollowUpResearch.md](Protocols/FollowUpResearch.md) | Mandatory per document | Follow-up question formulation and prioritization. |
 | [FromStagetoDatabases.md](Protocols/FromStagetoDatabases.md) | Mandatory per document | Stage 2 Markdown import into DuckDB. |
+| [FreeBrainstorming.md](Protocols/FreeBrainstorming.md) | Mandatory per document | External, protocol-governed brainstorm sessions (NR rounds). |
 | [Hook-Based-Auto-Trigger-Extraction.md](Protocols/Hook-Based-Auto-Trigger-Extraction.md) | Governing protocol; metadata review needed | Hook-triggered and on-demand citation ingestion. |
 | [Research-Evaluation.md](Protocols/Research-Evaluation.md) | Mandatory per document | Research evaluation, evidence, confidence, and review gates. |
+| [ResearchIntake.md](Protocols/ResearchIntake.md) | Mandatory per research subject | Pre-search intake questionnaire and scope gates before any search or dispatch. |
 | [TransitionStage2.md](Protocols/TransitionStage2.md) | Mandatory per document | Stage 1 to Stage 2 extraction. |
 | [OrganisationSpaceRules.md](Protocols/OrganisationSpaceRules.md) | Accepted 2026-09-28 | Organization and maintenance of this governance space. |
 
@@ -85,6 +88,7 @@ maintainer before relying on it as active policy.
 | [Protocols/FromStagetoDatabases.md](Protocols/FromStagetoDatabases.md) | Stage 2 database import | Mandatory per document. |
 | [Protocols/Hook-Based-Auto-Trigger-Extraction.md](Protocols/Hook-Based-Auto-Trigger-Extraction.md) | Citation-ingestion automation | Governing protocol; metadata review needed. |
 | [Protocols/Research-Evaluation.md](Protocols/Research-Evaluation.md) | Research evaluation | Mandatory per document. |
+| [Protocols/ResearchIntake.md](Protocols/ResearchIntake.md) | Pre-research intake procedure | Mandatory per research subject; feeds `RE:Gate A`. |
 | [Protocols/TransitionStage2.md](Protocols/TransitionStage2.md) | Stage transition extraction | Mandatory per document. |
 | [Protocols/OrganisationSpaceRules.md](Protocols/OrganisationSpaceRules.md) | Organization rules | Accepted 2026-09-28 for this space. |
 | [Commander Deck/Plans/OptimalSPrompt.md](Commander%20Deck/Plans/OptimalSPrompt.md) | Prompt architecture plan | Status needs review; preserve dated rationale and distinguish stale inventory statements. |

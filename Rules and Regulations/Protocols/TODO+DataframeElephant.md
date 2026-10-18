@@ -1,6 +1,6 @@
 # TODO + DataframeElephant — Cross-System Protocol
 
-**Version:** 1.0 · **Created:** 2026-10-05 · **Owner:** Chris
+**Version:** 1.6
 **Purpose:** the reference point connecting the two systems — the **TODO/Core vault** (task & agent command center) and **dataframe-elephant** (research workspace & artifact pipeline) — so that any agent reading this understands the codes, the structures, and how work flows between them. Read `TODO/Core/SYSTEM.md` and `dataframe-elephant/README.md` for each system's internal constitution.
 
 ---
@@ -18,26 +18,30 @@
 ## 2. The Human
 
 - The owner is **Chris**. Refer to him as **Chris** in all prose, reports, and documents.
-- `@user` is a *task-grammar token only* (task-line ownership, `-o user`, `owner:` frontmatter). Do not use it in prose.
+- **Agent-only domain (2026-10-07, chat-approved):** Chris never edits either system's files. All writes are agent-made. His decisions arrive via chat; agents transcribe them into the daily note `## Decisions` (`todo decide`). Questions only Chris can answer are parked with `todo escalate` (⏳ Decisions Queue) and relayed in chat — they block nothing else.
+- `@user` is retired as an owner token; every task line is owned by an agent.
 
-## 3. Project Code Registry (as of 2026-10-05)
+## 3. Project Code Registry (as of 2026-10-10)
 
 Canonical source: `TODO/Core/projects/_index.md` (generated). Statuses change; codes never do.
 
 | Code | Name | Status | Purpose / primary location |
 |---|---|---|---|
 | **SWD** | Software Product (from Artifacts) | planned, high | Select a product from the artifact pipeline → plan A + repo. Bridge between this pipeline and real software. `TODO/Core/projects/SWD/` |
-| **DMP** | Digital Markets and Products | planned, normal | Daily market research on digital-product marketplaces. Vault: `Documents\Obsidian Vaults\Code\Digital Markets and Products\` (Job Rules, Market Registry, Product Ledger, Run Log, Daily reports). Executed by **@hermes** cron, daily 11:00 Europe/Athens. |
-| **FRE** | Freelance Platforms | planned | Freelance-market research stream (same pattern as DMP, not yet initiated). |
+| **RWR** | Roster Work Record | active, high (goal 12) | Nightly evidence record per roster member: reports, closed tasks, artifacts, cron runs, commits. `Code/Hermes Cron Jobs/Roster work Record/` |
+| **ARC** | Architect Record | active, high (goal 13) | Evaluation of Chris's own inputs from session transcripts; read by Claude. Plan: `Code/Hermes Plans/SessionReviewAndArchitectRecord.md` |
+| **AUT** | Automation & Orchestration | active (goal 14) | Herdr / Oh My Pi and automated workflow targets, each decided by a dated scoped test. |
+| **DMP** | Digital Markets and Products | **retired 2026-10-10** | Market research stream; cron paused (not deleted), job archived to `TODO/Legacy folder/Legacy Cron Jobs/DMP/` |
+| **FRE** | Freelance Platforms | **retired 2026-10-10** | Research stream (never had a cron); capsule `TODO/Legacy folder/Legacy Goals/FRE/` |
 | **CRE** | Content Creator Economy Research | planned | Creator-economy research stream (third leg of the seller/freelancer/creator conjunction; cron deliberately deferred until DMP stabilizes). |
-| **CAM** | Coding Agents Market Scan | planned | Coding-agent market research (serves the developer customer-base view). |
+| **CAM** | Coding Agents Market Scan | **retired 2026-10-10** | Scan cron paused, job archived; the roster mirror folded into RWR |
 | **DE** | dataframe-elephant | active, high | Maintenance/implementation work inside the dataframe-elephant repo itself. |
 | **SYS** | TODO System (this vault) | active | Vault/CLI maintenance. |
-| TLM | Telemetry System | planned | Telemetry build goal. |
+| TLM | Telemetry System | **aborted 2026-10-07** (Chris) | Capsule: `dataframe-elephant/Rules and Regulations/Commander Deck/Telemetry/` |
 | OT | orange-tomato.com Revival | planned | Website revival. |
-| GDEV | NotebookLM + Google Dev Landscape | planned | Landscape research. |
-| JEV | Jev / System One Models | planned | Research project. |
-| MCP | MCP Servers Expertise | planned | MCP expertise build-out. |
+| GDEV | NotebookLM + Google Dev Landscape | **retired 2026-10-10** | Capsule `TODO/Legacy folder/Legacy Goals/GDEV/` |
+| JEV | Jev / System One Models | **retired 2026-10-10** | Capsule `TODO/Legacy folder/Legacy Goals/JEV/` |
+| MCP | MCP Servers Expertise | **retired 2026-10-10** | Capsule `TODO/Legacy folder/Legacy Goals/MCP/` |
 | VIS | Data Visualization Expertise | planned | Expertise build-out. |
 
 **The customer-base conjunction (Chris, 2026-10-05):** DMP (digital-market sellers) + FRE (freelancers) + CRE (content creators) research streams feed **SWD-8**, which synthesizes them into customer-base profiles and tool propositions. Thesis: sellers/freelancers/creators are the customer base for tools; the tool-seller earns more reliably than the activity-seller ("sell shovels").
@@ -72,13 +76,16 @@ TODO/Core/projects/SWD/plans/a.md                             ← plan A: MVP, r
 
 Canonical source: `TODO/Core/agents/_index.md` (generated) + `agents/<name>.md` cards.
 
-| Agent | Role | Current assignment (2026-10-05) |
+| Agent | Role | Current assignment (2026-10-15) |
 |---|---|---|
-| **Chris** | Human owner; decides SWD-2 and all product picks | — |
-| **@zcode** | Orchestrating coding agent; runs SWD analysis/evaluations, vault bootstrap | SWD-5..9 queue; built the TODO vault |
-| **@hermes** | Research agent with cron jobs | Daily 11:00 DMP scan (`Code\Digital Markets and Products\`); slated for FRE-1, CAM-1, GDEV-1, DMP-1/4 |
-| @goose | CLI/desktop coding agent | Standby (DE plan A ready) |
-| @claude, @opencode, @pi | Coding agents | Standby |
+| **Chris** | Human owner; decides product picks via chat relay (agents transcribe) | — |
+| **@hermes** | **Orchestrating agent — the main force responsible for TODO/Core**; research agent; runs the Roster Work Record | Vault upkeep, research, analysis, decisions, publishing, and cross-domain strategy |
+| **@pi** | Active coding agent (pi-coding-agent 1.1.0; Herdr integration current) | Coding team; concrete work routed by project task owners |
+| **@omp** | Active coding agent (Oh My Pi 18.10.3; Herdr integration current) | Coding team; concrete work routed by project task owners |
+| **@claude** | **Retired 2026-10-15**; the Claude desktop app is uninstalled from the host | Out of roster |
+| **@opencode** | Retired 2026-10-13; tool remains uninstalled | Out of roster |
+| @zcode | Orchestrating coding agent (built this vault) — retired 2026-10-07 | Out of roster; authority over TODO/Core transferred to @hermes |
+| @goose | CLI/desktop coding agent — retired 2026-10-06 | Out of roster |
 
 ## 6. TODO Vault Protocol Quick Reference
 
@@ -90,9 +97,9 @@ Canonical source: `TODO/Core/agents/_index.md` (generated) + `agents/<name>.md` 
 
 ## 7. Cross-System Flows (what connects the two)
 
-1. **DMP cron → market evidence.** Hermes scans 3 markets/day into `Product Ledger.md` (append-only, P-####) and files `Daily/YYYY-MM-DD.md`; task-syncs via `todo log`/`todo report hermes -p DMP`.
+1. **Market evidence (DMP cron — retired 2026-10-10).** *Historical:* Hermes scanned 3 markets/day into `Product Ledger.md` (append-only, P-####) and filed `Daily/YYYY-MM-DD.md`; the job is paused and archived to `TODO/Legacy folder/Legacy Cron Jobs/DMP/`, and the ledger data stays available for SWD. **Now:** into `Product Ledger.md` (append-only, P-####) and files `Daily/YYYY-MM-DD.md`; task-syncs via `todo log`/`todo report hermes -p DMP`.
 2. **Market evidence → ideation.** DMP patterns seed market-seeded brainstorming (Stage 2/DMP-SWD track) with the three targeting fields mandatory per idea.
-3. **Ideation → evaluation → pick.** `Evaluation_of_SoftwareIDEAS` rubric produces tiers; top candidates go to Chris (SWD-2, decision in daily note).
+3. **Ideation → evaluation → pick.** `Evaluation_of_SoftwareIDEAS` rubric produces tiers; top candidates are escalated to Chris (SWD-2) via the chat relay and the agent records the pick with `todo decide` in the daily note.
 4. **Pick → Step 2 → plan A.** `FromStep1toStep2` produces the building orientation; SWD-3 turns it into `projects/SWD/plans/a.md`; plan steps execute via the standard task grammar.
 5. **Prediction journal (standing rule, SWD-1 memo addendum):** before any code, the picked product gets a one-page falsifiable thesis — price, segment, expected sales at 30/60/90 days, the signal that would prove it wrong; post-mortem regardless of outcome, lessons written back into the protocols.
 6. **Learning loop.** Chris's SWD objective: even a $0-revenue product must build the judgment to recognize real prospects — every pick is a calibration rep, and DMP/FRE/CRE data make each rep better instrumented.
@@ -102,6 +109,16 @@ Canonical source: `TODO/Core/agents/_index.md` (generated) + `agents/<name>.md` 
 1. Read this file, then the relevant system's constitution (`SYSTEM.md` / `README.md` + protocols) before editing anything.
 2. Append-only for reports, logs, ledgers, and artifact track files; archive, never destroy.
 3. Use the `bin/todo` CLI for all task operations; run `todo sync` after direct file edits.
-4. Protocols under `Rules and Regulations/Protocols/` and `TODO/Core/SYSTEM.md` are law; change them only through Chris.
+4. Protocols under `Rules and Regulations/Protocols/` and `TODO/Core/SYSTEM.md` are law; amendments are **chat-approved by Chris, then applied and logged by an agent** (bump the version, append a change-log line).
 5. Cite evidence tiers (Observed/Reported/Estimated/Unverified) when reusing DMP data — estimate-grade numbers are never presented as facts.
 6. When in doubt, leave a trace (`todo log "…"`) rather than making an unrecorded decision.
+
+---
+
+*Change log: v1.0 — 2026-10-05, initial. v1.1 — 2026-10-07, agent-only domain (chat-approved): Chris interacts only via chat; `@user` retired; decisions transcribed by agents (`todo decide`); protocol amendments chat-approved then agent-applied. v1.2 — 2026-10-07, roster change (Chris, via chat relay): @zcode retired; orchestrator authority over TODO/Core transferred to @hermes; §5 roster table refreshed, canonical source remains `TODO/Core/agents/_index.md`. v1.3 — 2026-10-09, roster change (Chris, via chat): @pi retired; team = Hermes + Opencode (+ limited Claude desktop); §5 table refreshed.*
+
+*Change log: v1.0 — 2026-10-05, initial. v1.1 — 2026-10-07, agent-only domain (chat-approved): Chris interacts only via chat; `@user` retired; decisions transcribed by agents (`todo decide`); protocol amendments chat-approved then agent-applied. v1.2 — 2026-10-07, roster change (Chris, via chat relay): @zcode retired; orchestrator authority over TODO/Core transferred to @hermes; §5 roster table refreshed, canonical source remains `TODO/Core/agents/_index.md`. v1.3 — 2026-10-09, roster change (Chris, via chat): @pi retired; team = Hermes + Opencode (+ limited Claude desktop); §5 table refreshed. v1.4 — 2026-10-10, retirement pass + roster hold (Chris, chat: "implement steps 0–6"): FRE/DMP/CAM cron jobs paused and their goals retired to `TODO/Legacy folder` (GDEV/JEV/MCP retired with them); CAM's roster mirror folded into RWR; §3 registry updated (RWR/ARC/AUT added as goals 12/13/14); §5 roster table corrected in place and the roster put ON HOLD — no seat granted or removed pending Chris's final announcement; evidence rule (pointers, not impressions) recorded in `TODO/Core/SYSTEM.md`.*
+
+*Change log: v1.5 — 2026-10-13, roster finalized by Chris: Pi and Oh My Pi active; Claude remains limited desktop support; OpenCode retired; §5 refreshed to match TODO/Core, with project-level task ownership left per task line.*
+
+*Change log: v1.6 — 2026-10-15, roster change (Chris, via chat): Claude desktop retired from the roster and uninstalled from the host (winget `Anthropic.Claude`; app data and `~/.claude.json` removed); §5 table refreshed to match `TODO/Core/agents/_index.md`. Reason recorded in `Hermes Notebook/01-MISSIONS/2026-10-15_claude-uninstall-and-roster-removal.md`.*

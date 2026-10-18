@@ -44,6 +44,7 @@
 4. **Pre-flight Gate Checks** – `frontmatter_gate_failures()` validates Markdown structure before loading.
 5. **Property-Based Testing** – `hypothesis` adds property tests for URL normalization, stable-ID determinism, classification membership, and table parsing.
 6. **Round-Trip Verification** – Export and import pipelines include verification steps comparing schema, contents, and views.
+7. **Research Intake Gate** – `Rules and Regulations/Protocols/ResearchIntake.md` requires a subject's scope to be fixed through the intake questionnaire (gates `RI:Gate A`–`RI:Gate D`) before any search, source-register seeding, skeleton creation, or extraction begins.
 
 ## Important Files
 
@@ -56,6 +57,7 @@
 | `src/archive_core.py` | ECA encryption & archiving |
 | `src/followup_core.py` | Gap detection and follow-up question generation |
 | `src/prompt_core.py` | Prompt template assembly and linting (R1–R5) |
+| `Rules and Regulations/Protocols/ResearchIntake.md` | Pre-search intake questionnaire and scope gates (`RI:Gate A`–`RI:Gate D`) |
 | `src/prompt_templates/` | Prompt templates and shared `lib/` partials |
 | `schemas/stage2.sql` | DuckDB schema for Stage 2 data |
 | `schemas/citations.sql` | DuckDB schema for citation data |

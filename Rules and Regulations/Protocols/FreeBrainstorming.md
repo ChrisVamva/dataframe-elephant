@@ -75,6 +75,10 @@ Facilitate external, independent brainstorming without self-referential projecti
 - **Impact:** Measurable benefits in the external domain, not internal efficiency.
 - **Ethics:** No references to internal ethical frameworks unless universally accepted principles.
 
+### Readability Gate (Mandatory)
+- Read `BrainstormReadability.md` (same folder) before writing the report. It governs how the report must read.
+- A report that fails its six-check self-check is not delivered. Rewrite it. Structure, coverage, and verified citations do not compensate for an unreadable report.
+
 ### Review Process
 - **Blind Review:** Evaluators have no access to project internals
 - **External Experts:** At least one reviewer from unrelated domain
@@ -86,6 +90,7 @@ A brainstorming session is complete when:
 - All ideas have at least one external reference point (publication, standard, industry practice)
 - No idea requires internal project changes to be implemented
 - Each idea can be understood by someone unfamiliar with this project
+- The report passes the readability self-check in `BrainstormReadability.md`, recorded in its header as `Self-check: 6/6`
 
 ## Artifacts
 
